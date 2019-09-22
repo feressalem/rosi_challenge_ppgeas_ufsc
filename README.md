@@ -59,10 +59,6 @@ $ sudo make install
 ## Install OpenCV 3.4.4 with contrib (non-free modules)
 ```
 $ cd ~/Libraries/
-$ cvVersion="3.4.4"
-$ mkdir installation
-$ mkdir installation/OpenCV-"$cvVersion"
-$ cwd=$(pwd)
 $ sudo apt -y update
 $ git clone https://github.com/opencv/opencv.git
 $ cd opencv
