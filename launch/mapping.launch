@@ -1,0 +1,121 @@
+<launch>
+
+	<!-- Publish static transforms -->
+	<node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" />
+	<node name="bl_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link imu" />
+        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.3 0 0.009 0 0 0 1 base_link camera_link" />
+
+	<!-- Load reasonable defaults for the relative pose between cameras -->
+  	<include file="$(find rgbd_launch)/launch/kinect_frames.launch">
+ 	   <arg name="camera" value="camera" />
+	</include>
+
+
+	<arg name="model_rosi" default="$(find rosi_defy)/urdf/rosi.urdf" />
+	<arg name="gui" default="false" />
+	<arg name="rvizconfig" default="$(find rosi_2dnav)/rviz/debug.rviz" />
+
+	<param name="robot_description" command="$(find xacro)/xacro $(arg model_rosi)" />
+	<param name="use_gui" value="$(arg gui)" />
+
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+        <!-- running the joystick node -->
+	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
+
+	<!-- running the rosi joystick example node -->
+	<node name="rosi_joy" pkg="rosi_defy" type="rosi_joy.py" respawn="true"/>
+
+	<!-- load simulation config params -->
+	<rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml" />
+
+	<!-- transfer velodyne pointoclouds to base_link frame_id -->
+        <node name="pcl_tf" pkg="rosi_2dnav" type="pcl_tf" />
+
+	<!-- convert transferred velodyne pointoclouds to 2d laserscan -->
+        <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+
+        <remap from="cloud_in" to="/sensor/velodyne_bl"/>
+        <remap from="scan" to="/sensor/velodyne_scan"/>
+        <rosparam>
+            transform_tolerance: 0.01
+            min_height: 0.0
+            max_height: 1.0
+
+            angle_min: -0.7854 # -M_PI/2
+            angle_max: 1.5708 # M_PI/2
+            angle_increment: 0.0087 # M_PI/360.0
+            scan_time: 0.2
+            range_min: 0.9
+            range_max: 4.0
+            use_inf: true
+            inf_epsilon: 1.0
+
+            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
+            # 0 : Detect number of cores
+            # 1 : Single threaded
+            # 2->inf : Parallelism level
+            concurrency_level: 1
+        </rosparam>
+
+	</node>
+
+	<!-- flip kinect rgb -->
+        <node name="kinect_converter" pkg="rosi_2dnav" type="kinect_converter" />
+
+	<!-- rectify kinect rgb -->
+	  <group ns="camera">
+
+ 	   <!-- Start nodelet manager in provided namespace -->
+ 	  <arg name="manager" value="camera_nodelet_manager" />
+  	  <arg name="debug" default="false" /> <!-- Run manager in GDB? -->
+ 	   <include file="$(find rgbd_launch)/launch/includes/manager.launch.xml">
+  	    <arg name="name"                value="$(arg manager)" />
+  	    <arg name="debug"               value="$(arg debug)" />
+  	    <arg name="num_worker_threads"  value="4" />
+  	  </include>
+
+ 	 <node pkg="nodelet" type="nodelet" name="rgb_rectify_color"
+ 	       args="load image_proc/rectify camera_nodelet_manager"
+ 	       respawn="false">
+ 	   <remap from="image_mono" to="rgb/image_color" />
+ 	   <remap from="image_rect" to="rgb/image_rect_color" />
+ 	 </node>
+  	</group>
+
+	<!-- flip kinect depth -->
+        <node name="kinect_converter_depth" pkg="rosi_2dnav" type="kinect_converter_depth" />
+
+	<group ns="rtabmap">
+	<node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen" >
+ 	    <remap from="scan_cloud"      to="/sensor/velodyne_bl"/>
+ 	    <remap from="odom"      to="/icpodom"/>
+ 	    <remap from="odom_info"      to="/rtabmap/odom_info"/>
+	  
+ 	    <param name="frame_id"        type="string" value="base_link"/>   
+ 	    <param name="publish_tf"        type="bool" value="true"/> 
+     
+  	   <param name="Icp/PointToPlane"  type="string" value="true"/>
+ 	    <param name="Icp/VoxelSize"     type="string" value="0.05"/>
+  	   <param name="Icp/Epsilon"       type="string" value="0.001"/>
+ 	    <param name="Icp/PointToPlaneK"  type="string" value="0"/>
+  	   <param name="Icp/PointToPlaneRadius"  type="string" value="0.3"/>
+  	   <param name="Icp/PointToPlaneMinComplexity"  type="string" value="0.005"/>
+  	   <param name="Icp/MaxCorrespondenceDistance" type="string" value="0.1"/>
+  	   <param name="Icp/PM"             type="string" value="true"/> <!-- use libpointmatcher to handle PointToPlane with 2d scans-->
+  	   <param name="Icp/PMOutlierRatio" type="string" value="0.65"/><!-- 95? -->
+	   <param name="Icp/RangeMin" type="string" value="0.9"/>
+  	   <param name="Odom/Strategy"        type="string" value="0"/>
+ 	    <param name="Odom/GuessMotion"     type="string" value="true"/>
+ 	    <param name="Odom/ResetCountdown"  type="string" value="0"/>
+  	   <param name="Odom/ScanKeyFrameThr"  type="string" value="0.9"/>
+            <param name="Reg/sTRATEGY"  type="string" value="1"/>
+ 	</node>
+  	</group>
+
+Icp/PointToPlaneMinComplexity
+ 
+ 
+</launch>

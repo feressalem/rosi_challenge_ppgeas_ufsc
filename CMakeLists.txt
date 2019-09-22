@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(rosi_2dnav)
+project(rosi_challenge_ppgeas_ufsc)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -108,7 +108,7 @@ find_package( OpenCV REQUIRED )
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES rosi_2dnav
+#  LIBRARIES rosi_challenge_ppgeas_ufsc
    CATKIN_DEPENDS move_base sensor_msgs cv_bridge roscpp std_msgs image_transport boost pcl_ros
 #  DEPENDS system_lib
 )
@@ -128,7 +128,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/rosi_2dnav.cpp
+#   src/${PROJECT_NAME}/rosi_challenge_ppgeas_ufsc.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -217,7 +217,7 @@ target_link_libraries(kinect_converter_depth
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_rosi_2dnav.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_rosi_challenge_ppgeas_ufsc.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
