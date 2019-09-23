@@ -21,7 +21,7 @@ This repository is structured as a ROS package. The folders organization is as f
 
 # Installation
 
-The simulator was conceived using **Ubuntu 18.4.2**, **ROS Melodic**, and **V-REP 3.6.2 (rev.0)**. Another software versions might work, but they are not recommended nor officially supported for the competition. THis solution uses Rtabmap for real time appearence based map, with lbpointmatcher and opencv with contrib modules, which should be all built from source.
+The simulator was conceived using **Ubuntu 18.4.2**, **ROS Melodic**, and **V-REP 3.6.2 (rev.0)**. Another software versions might work, but they are not recommended nor officially supported for the competition. This solution uses Rtabmap for real time appearence based map, with libpointmatcher and opencv with contrib modules, which should be all built from source.
 
 ## Installation advices
 

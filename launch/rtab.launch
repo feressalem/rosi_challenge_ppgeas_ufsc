@@ -15,20 +15,7 @@
    	   <param name="approx_sync"       value="true"/> 
   	   </node>
 
-    <node pkg="rtabmap_ros" type="rgbd_odometry" name="visual_odometry" output="screen" args="--delete_db_on_start">
 
-      <remap from="odom"            to="/vo"/>
-      <param name="subscribe_rgbd"         type="bool" value="true"/>
-      <param name="frame_id"               type="string" value="base_link"/>
-      <param name="publish_tf"             type="bool"   value="false"/>
-      <param name="publish_null_when_lost" type="bool"   value="true"/>
-      <param name="guess_from_tf"          type="bool"   value="true"/>
-
-      <param name="Odom/FillInfoData"      type="string" value="true"/>
-      <param name="Odom/ResetCountdown"    type="string" value="1"/>
-      <param name="Vis/FeatureType"        type="string" value="6"/> 
-      <param name="OdomF2M/MaxSize"        type="string" value="1000"/>
-    </node>
 
   	  <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
 
@@ -37,14 +24,14 @@
    	      <param name="subscribe_depth" type="bool" value="false"/>
     	      <param name="subscribe_rgbd" type="bool" value="true"/>
     	      <param name="subscribe_scan" type="bool" value="false"/>
-    	      <param name="subscribe_scan_cloud" type="bool" value="false"/>
+    	      <param name="subscribe_scan_cloud" type="bool" value="true"/>
     	      <param name="publish_tf" type="bool" value="false"/>
 	
-    	      <remap from="odom" to="/odometry/filtered"/>
-     	      <remap from="scan" to="/sensor/velodyne_scan"/>
+    	      <remap from="odom" to="/icpodom"/>
+     	      <remap from="scan_cloud" to="/sensor/velodyne_bl"/>
     	      <remap from="rgbd_image" to="rgbd_image"/>
 
-      	      <param name="queue_size" type="int" value="10"/>
+      	      <param name="queue_size" type="int" value="15"/>
 
           <!-- RTAB-Map's parameters -->
               <param name="RGBD/NeighborLinkRefining" type="string" value="true"/>
@@ -54,7 +41,7 @@
        	      <param name="RGBD/OptimizeFromGraphEnd" type="string" value="false"/>
       	      <param name="Grid/FromDepth"            type="string" value="true"/> <!-- occupancy grid from lidar -->
       	      <param name="Reg/Force3DoF"             type="string" value="false"/>
-              <param name="Reg/Strategy"              type="string" value="0"/> <!-- 1=ICP -->
+              <param name="Reg/Strategy"              type="string" value="1"/> <!-- 1=ICP -->
               <param name="Kp/DetectorStrategy"    type="string" value="6"/> <!-- use same features as odom -->
           
           <!-- ICP parameters -->
@@ -67,9 +54,9 @@
   	      <param name="subscribe_rgbd"      type="bool" value="true"/>
    	      <param name="subscribe_scan" type="bool" value="false"/>
  	      <param name="frame_id"            type="string" value="base_link"/>
-    	      <param name="subscribe_scan_cloud" type="bool" value="false"/>
+    	      <param name="subscribe_scan_cloud" type="bool" value="true"/>
     
-  	      <remap from="scan"            to="/sensor/velodyne_scan"/>
+  	      <remap from="scan_cloud"            to="/sensor/velodyne_bl"/>
 
   	      <remap from="odom" to="/odometry/filtered"/>
   	      <param name="subscribe_odom_info" type="bool" value="true"/>

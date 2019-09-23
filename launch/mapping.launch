@@ -3,8 +3,8 @@
 	<!-- Publish static transforms -->
 	<node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" />
 	<node name="bl_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link imu" />
-        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.3 0 0.009 0 0 0 1 base_link camera_link" />
-
+        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 -0.0871557 0 0.9961947 base_link camera_link" />
+	<!-- OBS: kinect position and orientation tuned empirically -->
 	<!-- Load reasonable defaults for the relative pose between cameras -->
   	<include file="$(find rgbd_launch)/launch/kinect_frames.launch">
  	   <arg name="camera" value="camera" />
@@ -13,14 +13,14 @@
 
 	<arg name="model_rosi" default="$(find rosi_defy)/urdf/rosi.urdf" />
 	<arg name="gui" default="false" />
-	<arg name="rvizconfig" default="$(find rosi_2dnav)/rviz/debug.rviz" />
+	<arg name="rvizconfig" default="$(find rosi_challenge_ppgeas_ufsc)/rviz/debug.rviz" />
 
 	<param name="robot_description" command="$(find xacro)/xacro $(arg model_rosi)" />
 	<param name="use_gui" value="$(arg gui)" />
 
 	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" / -->
 
         <!-- running the joystick node -->
 	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
@@ -31,8 +31,11 @@
 	<!-- load simulation config params -->
 	<rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml" />
 
+	<!-- running the rosi arms control node -->
+	<node name="control_arm_speed" pkg="rosi_challenge_ppgeas_ufsc" type="control_arm_speed.py" respawn="true"/>
+
 	<!-- transfer velodyne pointoclouds to base_link frame_id -->
-        <node name="pcl_tf" pkg="rosi_2dnav" type="pcl_tf" />
+        <node name="pcl_tf" pkg="rosi_challenge_ppgeas_ufsc" type="pcl_tf" />
 
 	<!-- convert transferred velodyne pointoclouds to 2d laserscan -->
         <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
@@ -63,7 +66,7 @@
 	</node>
 
 	<!-- flip kinect rgb -->
-        <node name="kinect_converter" pkg="rosi_2dnav" type="kinect_converter" />
+        <node name="kinect_converter" pkg="rosi_challenge_ppgeas_ufsc" type="kinect_converter" />
 
 	<!-- rectify kinect rgb -->
 	  <group ns="camera">
@@ -86,7 +89,7 @@
   	</group>
 
 	<!-- flip kinect depth -->
-        <node name="kinect_converter_depth" pkg="rosi_2dnav" type="kinect_converter_depth" />
+        <node name="kinect_converter_depth" pkg="rosi_challenge_ppgeas_ufsc" type="kinect_converter_depth" />
 
 	<group ns="rtabmap">
 	<node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen" >
@@ -111,8 +114,68 @@
  	    <param name="Odom/GuessMotion"     type="string" value="true"/>
  	    <param name="Odom/ResetCountdown"  type="string" value="0"/>
   	   <param name="Odom/ScanKeyFrameThr"  type="string" value="0.9"/>
-            <param name="Reg/sTRATEGY"  type="string" value="1"/>
+            <param name="Reg/Strategy"  type="string" value="1"/>
  	</node>
+
+	   <!-- Use RGBD synchronization -->
+ 	   <!-- Here is a general example using a standalone nodelet, 
+ 	        but it is recommended to attach this nodelet to nodelet 
+ 	        manager of the camera to avoid topic serialization -->
+	   <node pkg="nodelet" type="nodelet" name="rgbd_sync" args="standalone rtabmap_ros/rgbd_sync" output="screen">
+  	    <remap from="rgb/image"       to="/camera/rgb/image_rect_color"/>
+  	    <remap from="depth/image"     to="/camera/depth_registered/image_raw"/>
+ 	    <remap from="rgb/camera_info" to="/camera/rgb/camera_info"/>
+  	    <remap from="rgbd_image"      to="rgbd_image"/> <!-- output -->
+      
+   	   <!-- Should be true for not synchronized camera topics 
+    	       (e.g., false for kinectv2, zed, realsense, true for xtion, kinect360)-->
+   	   <param name="approx_sync"       value="true"/> 
+  	   </node>
+
+  	  <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
+
+   	      <param name="frame_id" type="string" value="base_link"/>
+
+   	      <param name="subscribe_depth" type="bool" value="false"/>
+    	      <param name="subscribe_rgbd" type="bool" value="true"/>
+    	      <param name="subscribe_scan" type="bool" value="false"/>
+    	      <param name="subscribe_scan_cloud" type="bool" value="true"/>
+    	      <param name="publish_tf" type="bool" value="false"/>
+	
+    	      <remap from="odom" to="/icpodom"/>
+     	      <remap from="scan_cloud" to="/sensor/velodyne_bl"/>
+    	      <remap from="rgbd_image" to="rgbd_image"/>
+
+      	      <param name="queue_size" type="int" value="15"/>
+
+          <!-- RTAB-Map's parameters -->
+              <param name="RGBD/NeighborLinkRefining" type="string" value="true"/>
+              <param name="RGBD/ProximityBySpace"     type="string" value="true"/>
+       	      <param name="RGBD/AngularUpdate"        type="string" value="0.01"/>
+       	      <param name="RGBD/LinearUpdate"         type="string" value="0.01"/>
+       	      <param name="RGBD/OptimizeFromGraphEnd" type="string" value="false"/>
+      	      <param name="Grid/FromDepth"            type="string" value="true"/> <!-- occupancy grid from lidar -->
+      	      <param name="Reg/Force3DoF"             type="string" value="false"/>
+              <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->
+              <param name="Kp/DetectorStrategy"    type="string" value="6"/> <!-- use same features as odom -->
+          
+          <!-- ICP parameters -->
+  	      <param name="Icp/VoxelSize"                 type="string" value="0.05"/>
+   	      <param name="Icp/MaxCorrespondenceDistance" type="string" value="0.1"/>
+  	  </node>
+
+
+   	  <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen">
+  	      <param name="subscribe_rgbd"      type="bool" value="true"/>
+   	      <param name="subscribe_scan" type="bool" value="false"/>
+ 	      <param name="frame_id"            type="string" value="base_link"/>
+    	      <param name="subscribe_scan_cloud" type="bool" value="true"/>
+    
+  	      <remap from="scan_cloud"            to="/sensor/velodyne_bl"/>
+
+  	      <remap from="odom" to="/icpodom"/>
+  	      <param name="subscribe_odom_info" type="bool" value="true"/>
+  	  </node>
   	</group>
 
 Icp/PointToPlaneMinComplexity
