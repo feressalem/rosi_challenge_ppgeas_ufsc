@@ -31,8 +31,11 @@
 	<!-- load simulation config params -->
 	<rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml" />
 
-	<!-- running the rosi arms control node -->
+	<!-- running the rosi arms controller node -->
 	<node name="control_arm_speed" pkg="rosi_challenge_ppgeas_ufsc" type="control_arm_speed.py" respawn="true"/>
+
+	<!-- running the rosi base controller node -->
+	<node name="base_controller_node" pkg="rosi_challenge_ppgeas_ufsc" type="base_controller.py" respawn="true"/>
 
 	<!-- transfer velodyne pointoclouds to base_link frame_id -->
         <node name="pcl_tf" pkg="rosi_challenge_ppgeas_ufsc" type="pcl_tf" />
