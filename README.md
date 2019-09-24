@@ -27,6 +27,10 @@ The simulator was conceived using **Ubuntu 18.4.2**, **ROS Melodic**, and **V-RE
 
 By covention on this installation steps, all boxes starting with a `$` mark means that you should run the command on the terminal. 
 
+## Install move_base
+```
+sudo apt-get install ros-melodic-move-base
+```
 ## Install eigen
 ```
 sudo apt-get install libeigen3-dev
