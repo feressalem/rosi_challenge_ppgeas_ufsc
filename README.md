@@ -90,8 +90,11 @@ $ sudo make install
 ```
 $ source /opt/ros/melodic/setup.bash
 $ source ~/catkin_ws/devel/setup.bash
+
+# install and remove rtabmap_ros binaries for dependencies.
 $ sudo apt-get install ros-melodic-rtabmap ros-melodic-rtabmap-ros
 $ sudo apt-get remove ros-melodic-rtabmap ros-melodic-rtabmap-ros
+
 $ cd ~/Libraries/
 $ git clone https://github.com/introlab/rtabmap.git rtabmap
 $ cd rtabmap/build
