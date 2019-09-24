@@ -13,7 +13,7 @@
 
 	<arg name="model_rosi" default="$(find rosi_defy)/urdf/rosi.urdf" />
 	<arg name="gui" default="false" />
-	<arg name="rvizconfig" default="$(find rosi_challenge_ppgeas_ufsc)/rviz/debug.rviz" />
+	<arg name="rvizconfig" default="$(find rosi_challenge_ppgeas_ufsc)/config/debug.rviz" />
 
 	<param name="robot_description" command="$(find xacro)/xacro $(arg model_rosi)" />
 	<param name="use_gui" value="$(arg gui)" />
