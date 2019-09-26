@@ -56,7 +56,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files( 
 	DIRECTORY msg 
-	FILES ArmsSetPoint.msg ManipulatorJoints.msg
+	FILES ArmsSetPoint.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -145,7 +145,7 @@ add_executable(kinect_converter src/kinect_converter.cpp)
 add_executable(kinect_converter_depth src/kinect_converter_depth.cpp)
 add_executable(pcl_conv src/pointcloud_converter.cpp)
 add_executable(pcl_tf src/pcl_tf.cpp)
-add_executable(ur5_controller_node src/ur5_controller.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -156,7 +156,7 @@ add_executable(ur5_controller_node src/ur5_controller.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(ur5_controller_node ${catkin_EXPORTED_TARGETS})
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(kinect_converter
   ${catkin_LIBRARIES}
@@ -172,10 +172,7 @@ target_link_libraries(kinect_converter_depth
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS} 
 )
-target_link_libraries(ur5_controller_node
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS} 
-)
+
 #############
 ## Install ##
 #############
