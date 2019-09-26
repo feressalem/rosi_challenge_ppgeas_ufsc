@@ -1,4 +1,4 @@
-# PGEAS - UFSC - ROSI CHALLENGE - XIV SBAI
+# PPGEAS - UFSC - ROSI CHALLENGE - XIV SBAI
 
 ![rosi_banner](https://raw.githubusercontent.com/filRocha/rosiChallenge-sbai2019/master/resources/banner2.png)
 

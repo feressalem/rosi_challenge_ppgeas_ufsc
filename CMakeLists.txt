@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   pcl_ros
+  rosi_defy
 )
 
 ## System dependencies are found with CMake's conventions
@@ -55,7 +56,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files( 
 	DIRECTORY msg 
-	FILES ArmsSetPoint.msg
+	FILES ArmsSetPoint.msg ManipulatorJoints.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -121,7 +122,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
@@ -144,6 +145,7 @@ add_executable(kinect_converter src/kinect_converter.cpp)
 add_executable(kinect_converter_depth src/kinect_converter_depth.cpp)
 add_executable(pcl_conv src/pointcloud_converter.cpp)
 add_executable(pcl_tf src/pcl_tf.cpp)
+add_executable(ur5_controller_node src/ur5_controller.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,7 +156,7 @@ add_executable(pcl_tf src/pcl_tf.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+add_dependencies(ur5_controller_node ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 target_link_libraries(kinect_converter
   ${catkin_LIBRARIES}
@@ -167,6 +169,10 @@ target_link_libraries(pcl_tf
   ${catkin_LIBRARIES}
 )
 target_link_libraries(kinect_converter_depth
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS} 
+)
+target_link_libraries(ur5_controller_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS} 
 )
