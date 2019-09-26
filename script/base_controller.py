@@ -9,8 +9,8 @@ from geometry_msgs.msg import Twist
 class RosiNodeClass():
 
 	# class attributes
-	max_translational_speed = 5 # in [m/s]
-	max_rotational_speed = 10 # in [rad/s]
+	max_translational_speed = 4.8 # in [m/s]
+	max_rotational_speed = 9.08 # in [rad/s]
 
 	# how to obtain these values? see Mandow et al. COMPLETE THIS REFERENCE
 	var_lambda = 0.965
@@ -105,8 +105,8 @@ class RosiNodeClass():
 		x = np.linalg.lstsq(self.kin_matrix_A, b, rcond=-1)[0]
 
 		# query the sides velocities
-		self.omega_right = np.deg2rad(x[0][0])
-		self.omega_left = np.deg2rad(x[1][0])
+		self.omega_right = x[0]
+		self.omega_left = x[1]
 
 
 			
