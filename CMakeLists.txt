@@ -54,8 +54,8 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files( 
-	DIRECTORY msg 
+add_message_files(
+	DIRECTORY msg
 	FILES ArmsSetPoint.msg
 )
 
@@ -73,7 +73,7 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages( 
+generate_messages(
 	DEPENDENCIES std_msgs
 )
 
@@ -113,7 +113,6 @@ catkin_package(
    DEPENDS message_runtime std_msgs
 )
 
-
 ###########
 ## Build ##
 ###########
@@ -145,6 +144,8 @@ add_executable(kinect_converter_depth src/kinect_converter_depth.cpp)
 add_executable(pcl_conv src/pointcloud_converter.cpp)
 add_executable(pcl_tf src/pcl_tf.cpp)
 
+# Define compile flags
+set_target_properties(kinect_converter PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -159,7 +160,7 @@ add_executable(pcl_tf src/pcl_tf.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(kinect_converter
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBS} 
+  ${OpenCV_LIBS}
 )
 target_link_libraries(pcl_conv
   ${catkin_LIBRARIES}
@@ -169,7 +170,7 @@ target_link_libraries(pcl_tf
 )
 target_link_libraries(kinect_converter_depth
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBS} 
+  ${OpenCV_LIBS}
 )
 
 #############
@@ -226,3 +227,4 @@ target_link_libraries(kinect_converter_depth
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
