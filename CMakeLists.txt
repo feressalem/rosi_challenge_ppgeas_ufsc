@@ -60,17 +60,16 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+ add_service_files(
+   FILES
+   DetectFire.srv
+ )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
 #   FILES
 #   Action1.action
-#   Action2.action
+#   Action2.action	
 # )
 
 ## Generate added messages and services with any dependencies listed here

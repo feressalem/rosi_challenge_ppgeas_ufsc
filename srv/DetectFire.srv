@@ -1,0 +1,6 @@
+float64 posx
+float64 posy
+---
+bool fireflag
+float64 ctdx
+float64 ctdy
