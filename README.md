@@ -52,6 +52,8 @@ $ git clone https://github.com/feressalem/rosi_challenge_ppgeas_ufsc.git
 $ cd ..
 $ catkin build
 ```
+## Obs.: The robot is not moving autonomously yet, team is still working on mapping and ur-5 control parameters, for now mapping can be seen from mapping.launch. (29/09/2019)
+
 
 
 
