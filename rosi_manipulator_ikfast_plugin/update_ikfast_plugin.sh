@@ -1,0 +1,1 @@
+rosrun moveit_kinematics create_ikfast_moveit_plugin.py --search_mode=OPTIMIZE_MAX_JOINT --srdf_filename=rosi.srdf --robot_name_in_srdf=rosi --moveit_config_pkg=rosi_moveit_config rosi manipulator rosi_manipulator_ikfast_plugin base_link tool_pointer /home/danilo/catkin_ws/src/rosi_defy/urdf/rosi_manipulator_ikfast_plugin/src/rosi_manipulator_ikfast_solver.cpp

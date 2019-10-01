@@ -1,0 +1,3 @@
+- git: 
+    local-name: rosi_challenge_ppgeas_ufsc
+    uri: 'git@github.com:feressalem/rosi_challenge_ppgeas_ufsc.git'

@@ -1,0 +1,75 @@
+# MoveIt-specific simulation settings
+moveit_sim_hw_interface:
+  joint_model_group: controllers_initial_group_
+  joint_model_group_pose: controllers_initial_pose_
+# Settings for ros_control control loop
+generic_hw_control_loop:
+  loop_hz: 300
+  cycle_time_error_threshold: 0.01
+# Settings for ros_control hardware interface
+hardware_interface:
+  joints:
+    - fixed_map
+    - joint_arm_1
+    - joint_arm_2
+    - joint_arm_3
+    - joint_arm_4
+    - joint_kinect
+    - joint_ur5_j1
+    - joint_ur5_j2
+    - joint_ur5_j3
+    - joint_ur5_j4
+    - joint_ur5_j5
+    - joint_ur5_j6
+    - joint_wheel_1
+    - joint_wheel_2
+    - joint_wheel_3
+    - joint_wheel_4
+  sim_control_mode: 1  # 0: position, 1: velocity
+# Publish all joint states
+# Creates the /joint_states topic necessary in ROS
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+controller_list:
+  []
+arm_controller:
+  type: position_controllers/JointPositionController
+  joints:
+    - joint_ur5_j1
+    - joint_ur5_j2
+    - joint_ur5_j3
+    - joint_ur5_j4
+    - joint_ur5_j5
+    - joint_ur5_j6
+  gains:
+    joint_ur5_j1:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
+    joint_ur5_j2:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
+    joint_ur5_j3:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
+    joint_ur5_j4:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
+    joint_ur5_j5:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
+    joint_ur5_j6:
+      p: 100
+      d: 1
+      i: 1
+      i_clamp: 1
