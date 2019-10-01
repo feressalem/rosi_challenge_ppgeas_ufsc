@@ -31,11 +31,21 @@ class Waypoint(State):
         return 'success'
 
 if __name__ == '__main__':
-    rospy.init_node('patrol')
-    patrol = StateMachine('success')
+    rospy.init_node('state_machine')
+    state_machine = StateMachine('success')
 
-    with patrol:
-        StateMachine.add('Pose_Inicial', Pose_Inicial(), transitions={'success':'TWO'})
+    with state_machine:
+        StateMachine.add('Pose_Inicial', Pose_Inicial(), transitions={'success':'First_Waypoint'})
+        StateMachine.add('First_Waypoint', Waypoint(w[1], w[2]), transitions={'success':'Touch_1'})
+        StateMachine.add('Medida', Medida(), transitions={'success':waypoint[i]})
+        StateMachine.add('Medida', Medida(), transitions={'success':waypoint[i]})
         for i,w in enumerate(waypoints):
             StateMachine.add(w[0], Waypoint(w[1], w[2]),transitions={'success':waypoints[(i + 1) % \ len(waypoints)][0]})
-            patrol.execute()
+
+    state_machine.execute()
+
+    sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
+    sis.start()
+    outcome = sm.execute()
+    rospy.spin()
+    sis.stop()
