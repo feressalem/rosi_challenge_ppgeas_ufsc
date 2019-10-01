@@ -18,8 +18,22 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   pcl_ros
   rosi_defy
+  moveit_core
+  moveit_visual_tools
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  moveit_ros_perception
+  pluginlib
+  geometric_shapes
+  pcl_ros
+  pcl_conversions
+  rosbag
+  tf2_ros
+  tf2_eigen
+  tf2_geometry_msgs
 )
-
+find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED system filesystem date_time thread)
 ## System dependencies are found with CMake's conventions
 
 #find_package( OpenCV REQUIRED )
@@ -109,8 +123,8 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rosi_challenge_ppgeas_ufsc
-   CATKIN_DEPENDS move_base sensor_msgs cv_bridge roscpp std_msgs image_transport boost pcl_ros
-   DEPENDS message_runtime std_msgs
+   CATKIN_DEPENDS move_base sensor_msgs cv_bridge roscpp std_msgs image_transport boost pcl_ros moveit_core moveit_visual_tools moveit_ros_planning_interface interactive_markers tf2_geometry_msgs
+   DEPENDS message_runtime std_msgs EIGEN3
 )
 
 ###########
@@ -123,6 +137,8 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIR}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -143,6 +159,7 @@ add_executable(kinect_converter src/kinect_converter.cpp)
 add_executable(kinect_converter_depth src/kinect_converter_depth.cpp)
 add_executable(pcl_conv src/pointcloud_converter.cpp)
 add_executable(pcl_tf src/pcl_tf.cpp)
+add_executable(move_group_interface src/moveit_interface.cpp)
 
 # Define compile flags
 set_target_properties(kinect_converter PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
@@ -171,6 +188,10 @@ target_link_libraries(pcl_tf
 target_link_libraries(kinect_converter_depth
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
+)
+target_link_libraries(move_group_interface
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 
 #############
