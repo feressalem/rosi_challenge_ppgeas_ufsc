@@ -8,7 +8,7 @@ This repository contains the ROS package solution from **PPGEAS-UFSC** group for
 
 This repository is structured as a ROS package. The folders organization is as follows:
 
-- `launch` - Contains ROS launch files for maping and localization. 
+- `launch` - Contains ROS launch files for mapping and localization. 
 
 - `src` - Eventual C++ nodes for specific tasks. 
 
@@ -18,7 +18,9 @@ This repository is structured as a ROS package. The folders organization is as f
 
 - `maps` - Contains 3d point cloud database and 2d gridmap.
 
-- `msg` - Generated message types.
+- `msg` - Generated custom message types.
+
+- `srv` - Generated custom service types.
 
 
 # Installation

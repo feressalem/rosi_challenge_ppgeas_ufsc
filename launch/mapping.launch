@@ -26,7 +26,7 @@
 	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
 
 	<!-- running the rosi joystick example node -->
-	<node name="rosi_joy" pkg="rosi_defy" type="rosi_joy.py" respawn="true"/>
+	<node name="rosi_joy" pkg="rosi_challenge_ppgeas_ufsc" type="rosi_joy.py" respawn="true"/>
 
 	<!-- load simulation config params -->
 	<rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml" />
@@ -68,6 +68,9 @@
 
 	</node>
 
+        <node name="scan_throttler" type="throttle" pkg="topic_tools" args="messages /sensor/velodyne_scan 1 /sensor/velodyne_scan_throttled" />
+        <node name="scan_throttler" type="throttle" pkg="topic_tools" args="messages /sensor/velodyne_bl 1 /sensor/velodyne_bl_throttled" />
+
 	<!-- flip kinect rgb -->
         <node name="kinect_converter" pkg="rosi_challenge_ppgeas_ufsc" type="kinect_converter" />
 
@@ -96,17 +99,6 @@
 
   <!-- Convenience launch file to launch odometry, rtabmap and rtabmapviz nodes at once -->
 
-  <!-- For stereo:=false
-        Your RGB-D sensor should be already started with "depth_registration:=true".
-        Examples:
-           $ roslaunch freenect_launch freenect.launch depth_registration:=true 
-           $ roslaunch openni2_launch openni2.launch depth_registration:=true -->
-           
-  <!-- For stereo:=true
-        Your camera should be calibrated and publishing rectified left and right 
-        images + corresponding camera_info msgs. You can use stereo_image_proc for image rectification.
-        Example:
-           $ roslaunch rtabmap_ros bumblebee.launch -->
      
   <!-- Choose between RGB-D and stereo -->      
   <arg name="stereo"          default="false"/>
@@ -136,7 +128,7 @@
   <arg name="database_path"           default="~/.ros/rtabmap.db"/>
   <arg name="queue_size"              default="10"/>
   <arg name="wait_for_transform"      default="0.2"/>
-  <arg name="args"                    default=""/>              <!-- delete_db_on_start, udebug -->
+  <arg name="args"                    default="delete_db_on_start"/>              <!-- delete_db_on_start, udebug -->
   <arg name="rtabmap_args"            default="$(arg args)"/>   <!-- deprecated, use "args" argument -->
   <arg name="launch_prefix"           default=""/>              <!-- for debugging purpose, it fills launch-prefix tag of the nodes -->
   <arg name="output"                  default="screen"/>        <!-- Control node output (screen or log) -->
@@ -150,7 +142,6 @@
   <arg name="rgb_topic"               default="/camera/rgb/image_rect_color" />
   <arg name="depth_topic"             default="/camera/depth_registered/image_raw" />
   <arg name="camera_info_topic"       default="/camera/rgb/camera_info" />
-  <arg name="depth_camera_info_topic" default="$(arg camera_info_topic)" />
   
   <!-- stereo related topics -->
   <arg name="stereo_namespace"        default="/stereo_camera"/>
@@ -184,7 +175,7 @@
   <arg name="odom_tf_angular_variance" default="1"/>             <!-- If TF is used to get odometry, this is the default angular variance -->
   <arg name="odom_tf_linear_variance"  default="1"/>             <!-- If TF is used to get odometry, this is the default linear variance -->
   <arg name="odom_args"                default=""/>              <!-- More arguments for odometry (overwrite same parameters in rtabmap_args) -->
-  <arg name="odom_sensor_sync"         default="false"/>
+  <arg name="odom_sensor_sync"         default="true"/>
   <arg name="odom_guess_frame_id"        default=""/>
   <arg name="odom_guess_min_translation" default="0"/>
   <arg name="odom_guess_min_rotation"    default="0"/> 
@@ -195,7 +186,7 @@
   <arg name="user_data_topic"          default="/user_data"/>
   <arg name="user_data_async_topic"    default="/user_data_async" /> <!-- user data async subscription (rate should be lower than map update rate) -->
   
-  <arg name="gps_topic"                default="/gps/fix" />         <!-- gps async subscription -->
+  <arg name="gps_topic"                default="/sensor/gps" />         <!-- gps async subscription -->
   
   <arg name="tag_topic"                default="/tag_detections" />  <!-- apriltags async subscription -->
   <arg name="tag_linear_variance"      default="0.0001" />
@@ -233,6 +224,7 @@
           <param name="approx_sync"     type="bool"   value="$(arg approx_rgbd_sync)"/>
           <param name="queue_size"      type="int"    value="$(arg queue_size)"/>
           <param name="depth_scale"     type="double" value="$(arg depth_scale)"/>
+          <param name="compressed_rate"     type="double" value="1"/>
         </node>
       </group>
     </group>
