@@ -4,6 +4,6 @@
 	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
 
 	<!-- running the rosi joystick example node -->
-	<node name="rosi_joy" pkg="rosi_challenge_ppgeas_ufsc" type="rosi_joy.py" respawn="true"/>
+	<node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/>
 
 </launch>
