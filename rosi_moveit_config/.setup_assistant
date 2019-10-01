@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: rosi_defy
+    relative_path: urdf/rosi_moveIt.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/rosi.srdf
+  CONFIG:
+    author_name: Danilo
+    author_email: danilo_gsch@hotmail.com
+    generated_timestamp: 1569636990
