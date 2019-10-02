@@ -23,7 +23,7 @@
 	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" / -->
 
         <!-- running the joystick node -->
-	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
+	<!-- node name="joy_node" pkg="joy" type="joy_node" respawn="true" /-->
 
 	<!-- running the rosi joystick example node -->
 	<node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/>
@@ -69,7 +69,7 @@
 	</node>
 
         <node name="scan_throttler" type="throttle" pkg="topic_tools" args="messages /sensor/velodyne_scan 1 /sensor/velodyne_scan_throttled" />
-        <node name="scan_throttler" type="throttle" pkg="topic_tools" args="messages /sensor/velodyne_bl 1 /sensor/velodyne_bl_throttled" />
+        <node name="scan_throttler2" type="throttle" pkg="topic_tools" args="messages /sensor/velodyne_bl 1 /sensor/velodyne_bl_throttled" />
 
 	<!-- flip kinect rgb -->
         <node name="kinect_converter" pkg="ppgeas" type="kinect_converter" />
