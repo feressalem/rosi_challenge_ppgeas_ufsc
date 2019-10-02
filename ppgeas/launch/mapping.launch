@@ -129,7 +129,7 @@
   <arg name="queue_size"              default="10"/>
   <arg name="wait_for_transform"      default="0.2"/>
   <arg name="args"                    default="delete_db_on_start"/>              <!-- delete_db_on_start, udebug -->
-  <arg name="rtabmap_args"            default="$(arg args)"/>   <!-- deprecated, use "args" argument -->
+  <arg name="rtabmap_args"            default="--delete_db_on_start"/>   <!-- deprecated, use "args" argument -->
   <arg name="launch_prefix"           default=""/>              <!-- for debugging purpose, it fills launch-prefix tag of the nodes -->
   <arg name="output"                  default="screen"/>        <!-- Control node output (screen or log) -->
   <arg name="publish_tf_map"          default="true"/>
