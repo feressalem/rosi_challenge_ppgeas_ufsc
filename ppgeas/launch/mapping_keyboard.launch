@@ -23,11 +23,11 @@
 	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" / -->
 
         <!-- running the joystick node -->
-	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
+	<!-- node name="joy_node" pkg="joy" type="joy_node" respawn="true" /-->
 
 	<!-- running the rosi joystick example node -->
-	<node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/ >
-  <!-- node name="rosi_cmd_vel" pkg="ppgeas" type="rosi_cmd_vel.py" respawn="true" /-->
+	<!-- node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/ -->
+  <node name="rosi_cmd_vel" pkg="ppgeas" type="rosi_cmd_vel.py" respawn="true" />
 
 	<!-- load simulation config params -->
 	<rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml" />
