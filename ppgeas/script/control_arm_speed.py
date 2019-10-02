@@ -3,7 +3,7 @@ import rospy
 import numpy as np
 from rosi_defy.msg import RosiMovement
 from rosi_defy.msg import RosiMovementArray
-from rosi_challenge_ppgeas_ufsc.msg import ArmsSetPoint
+from ppgeas.msg import ArmsSetPoint
 
 
 class RosiNodeClass():
