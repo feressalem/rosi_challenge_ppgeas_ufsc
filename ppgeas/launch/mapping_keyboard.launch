@@ -3,7 +3,7 @@
 	<!-- Publish static transforms -->
 	<!-- node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" / -->
 	<node name="bl_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link imu" />
-        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 -0.0871557 0 0.9961947 base_link camera_link" />
+        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 0 0 1 base_link camera_link" />
 	<!-- OBS: kinect position and orientation tuned empirically -->
 	<!-- Load reasonable defaults for the relative pose between cameras -->
   	<include file="$(find rgbd_launch)/launch/kinect_frames.launch">
@@ -23,11 +23,11 @@
 	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" / -->
 
         <!-- running the joystick node -->
-	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
+	<!-- node name="joy_node" pkg="joy" type="joy_node" respawn="true" /-->
 
 	<!-- running the rosi joystick example node -->
-	<node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/ >
-  <!-- node name="rosi_cmd_vel" pkg="ppgeas" type="rosi_cmd_vel.py" respawn="true" /-->
+	<!-- node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/ -->
+  <node name="rosi_cmd_vel" pkg="ppgeas" type="rosi_cmd_vel.py" respawn="true" />
 
 	<!-- load simulation config params -->
 	<rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml" />
