@@ -3,21 +3,21 @@
 import sys
 import copy
 import rospy
-import moveit_commander
-import moveit_msgs.msg
-import geometry_msgs.msg
-from math import pi
-from std_msgs.msg import String
-from moveit_commander.conversions import pose_to_list
-import rospy
-import numpy as np
 import math
-from geometry_msgs.msg import TwistStamped
-from rosi_defy.msg import RosiMovement
-from rosi_defy.msg import RosiMovementArray
-from rosi_defy.msg import ManipulatorJoints
+import numpy as np
+import moveit_msgs.msg
+import moveit_commander
+import geometry_msgs.msg
+from std_msgs.msg import String
 from sensor_msgs.msg import Joy
 from sensor_msgs.msg import Imu
+from sensor_msgs.msg import JointState
+from rosi_defy.msg import RosiMovement
+from geometry_msgs.msg import TwistStamped
+from rosi_defy.msg import RosiMovementArray
+from rosi_defy.msg import ManipulatorJoints
+from moveit_commander.conversions import pose_to_list
+from moveit_msgs.msg import RobotState, Constraints, OrientationConstraint
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 def all_close(goal, actual, tolerance):
@@ -44,9 +44,16 @@ def all_close(goal, actual, tolerance):
 
 class MoveGroupPythonIntefaceTutorial(object):
 
+    # Retorna os estados do manipulador segundo topico do vrep
     def callback_Mstates(self, msg):
             self.states = msg
 
+    # Retorna as posicoes do manipulador geradas pelo planejamento
+    def callback_Jstates(self, msg):
+            # pega o item posicao da mensagem e transforma em lista e joga na variavel para publicar
+            self.seq_points.append(list(msg.position))
+
+    # Adiciona box de restricao para o planejamento nao atravessar o chao
     def add_box(self, timeout=4):
 
         #box_name = self.box_name
@@ -81,6 +88,7 @@ class MoveGroupPythonIntefaceTutorial(object):
             seconds = rospy.get_time()
         return False
 
+    # Remove box de restricao para o planejamento ao final da execucao
     def remove_box(self, timeout=4):
         box_name = self.box_name
         scene = self.scene
@@ -88,10 +96,13 @@ class MoveGroupPythonIntefaceTutorial(object):
 
         return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
 
+    # Metodo inicial
     def __init__(self):
         super(MoveGroupPythonIntefaceTutorial, self).__init__()
-
+        self.pontos=[]
         self.juntas = []
+        self.seq_points = []
+        self.trajetoria = JointState()
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node('move_group_python_interface_tutorial', anonymous=True)
 
@@ -108,18 +119,44 @@ class MoveGroupPythonIntefaceTutorial(object):
 
         self.states = ManipulatorJoints()
 
+        # Publisher das posicoes da trajetoria
         self.pub_manipulator = rospy.Publisher('/ur5/jointsPosTargetCommand', ManipulatorJoints, queue_size=1)
+        # Subscriber dos estados das juntas
         self.sub_manipulatorStates = rospy.Subscriber('/ur5/jointsPositionCurrentState', ManipulatorJoints, self.callback_Mstates)
-
+        # Subscriber dos estados das juntas planejado
+        self.joint_states = rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.callback_Jstates, queue_size=100)
+        # Obtem o frame de referencia
         planning_frame = move_group.get_planning_frame()
         #print "============ Planning frame: %s" % planning_frame
-
+        # Obtem o link do efetuador
         eef_link = move_group.get_end_effector_link()
         #print "============ End effector link: %s" % eef_link
-
+        # Obtem o nome do grupo definido no moveit config
         group_names = robot.get_group_names()
         #print "============ Available Planning Groups:", robot.get_group_names()
 
+        #orientation_constraint = OrientationConstraint()
+        #orientation_constraint.link_name = "tool_pointer"
+        #orientation_constraint.orientation.w = 1.0
+        #orientation_constraint.absolute_x_axis_tolerance = 0.1
+        #orientation_constraint.absolute_y_axis_tolerance = 0.1
+        #orientation_constraint.absolute_z_axis_tolerance = 0.1
+        #orientation_constraint.weight = 1
+
+        #constraint_0 = moveit_msgs.msg.JointConstraint()
+        #constraint_0.joint_name = 'base_link'
+        #constraint_0.header.frame_id
+        ##constraint_0.position = joint_goal[0]
+        #constraint_0.orientation.w = 1.0
+        #constraint_0.tolerance_above = 0.1
+        #constraint_0.tolerance_below = 0.1
+        #constraint_0.weight = 1.0
+
+        #joint_limits = moveit_msgs.msg.Constraints()
+        #joint_limits.joint_constraints.append(constraint_0)
+        #joint_limits.joint_constraints.append(constraint_1)
+        #joint_limits.joint_constraints.append(constraint_2)
+        #move_group.set_path_constraints(joint_limits)
         #print "============ Printing robot state"
         #print robot.get_current_state()
         #print ""
@@ -134,14 +171,15 @@ class MoveGroupPythonIntefaceTutorial(object):
         self.eef_link = eef_link
         self.group_names = group_names
 
+    # Metodo para enviar posicao desejada das juntas
     def go_to_joint_state(self):
         move_group = self.move_group
 
         joint_goal = move_group.get_current_joint_values()
         angulos = self.states.joint_variable
-        joint_goal[0] = 0 # = 0 (vrep)
+        joint_goal[0] = 0.3 # = 0 (vrep)
         joint_goal[1] = -math.pi/2 # = 0 (vrep)
-        joint_goal[2] = 0 # = 0 (vrep)
+        joint_goal[2] = 0.5 # = 0 (vrep)
         joint_goal[3] = -math.pi/2 # = 0 (vrep)
         joint_goal[4] = 0
         joint_goal[5] = 0
@@ -158,41 +196,79 @@ class MoveGroupPythonIntefaceTutorial(object):
         #print self.robot.get_current_state()
         return all_close(joint_goal, current_joints, 0.01)
 
-    def executar(self):
+    # Metodo para enviar sequencia de pontos do planejamento para controle das juntas
+    def executar(self): #juntas_vrep
         #a = self.juntas[1]
         #self.juntas = [0,0,0,0,0,0]
         #self.juntas[1] = a
-        juntas_vrep = list(self.juntas)
-        juntas_vrep[1] += math.pi/2
-        juntas_vrep[3] += math.pi/2
-        print(self.juntas)
-        self.pub_manipulator.publish(joint_variable=juntas_vrep)
+        #juntas_vrep = list(self.juntas)
+        #juntas_vrep[1] += math.pi/2
+        #juntas_vrep[3] += math.pi/2
+        #print(self.juntas)
+        #for i in range(4):
+            #juntas_vrep = list(self.plan.joint_trajectory.points[i].positions)
+        #print(self.seq_points)
+        #while not rospy.is_shutdown():
+            #pass
+        #rospy.spin()
+        for juntas in self.seq_points:
+            self.pub_manipulator.publish(joint_variable=juntas)
+            rospy.sleep(0.2)
+        #print(self.move_group.get_current_pose().pose)
+        #print(self.trajetoria.position[1])
+        #for i in range(100):
+        #    self.juntas = []
+        #    for idx, j in enumerate(self.pontos):
+        #        self.juntas.append(j[i])
+        #    juntas_vrep = self.juntas
+        #    print(self.juntas)
+        #    self.pub_manipulator.publish(joint_variable=juntas_vrep)
+        #    rospy.sleep(0.2)
 
+    # Metodo para enviar posicao no espaco desejada
     def go_to_pose_goal(self):
         move_group = self.move_group
+        #Posicao Inicial
+        #pose_goal.orientation.x = -0.5004
+        #pose_goal.orientation.y = 0.4992
+        #pose_goal.orientation.z = 0.5
+        #pose_goal.orientation.w = 0.5004
+        #pose_goal.position.x = -0.10423
+        #pose_goal.position.y = 0.22235
+        #pose_goal.position.z = 1.1432
 
         pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.w = 1.0
-        pose_goal.position.x = 0.3
-        pose_goal.position.y = 0.5
-        pose_goal.position.z = 0.8
+        pose_goal.orientation.x = -0.5004
+        pose_goal.orientation.y = 0.4992
+        pose_goal.orientation.z = 0.5
+        pose_goal.orientation.w = 0.5004
+        pose_goal.position.x = 0.0
+        pose_goal.position.y = 0.22235
+        pose_goal.position.z = 1.0
 
-        print(move_group.set_pose_target(pose_goal))
+        move_group.set_pose_target(pose_goal)
 
         plan = move_group.go(wait=True)
-
 
         move_group.stop()
 
         move_group.clear_pose_targets()
 
         current_pose = self.move_group.get_current_pose().pose
+        #print(current_pose)
         estados = self.robot.get_current_state()
-        self.juntas = estados.joint_state.position
-        print self.juntas
+        estado_inicial = self.states.joint_variable
+        estado_final = estados.joint_state.position[5:11]
+        #self.juntas = estados.joint_state.position
+
+        #for i, elem in enumerate(range(6)):
+        #    self.pontos.append(list(np.linspace(estado_inicial[i],estado_final[i],100)))
+        #print(self.pontos)
+        #print self.pontos
         #self.pub_manipulator.publish(joint_variable=juntas)
         return all_close(pose_goal, current_pose, 0.01)
 
+    # Metodo para planejamento de pontos no plano cartesiano
     def plan_cartesian_path(self, scale=1):
         move_group = self.move_group
 
@@ -200,13 +276,15 @@ class MoveGroupPythonIntefaceTutorial(object):
 
         wpose = move_group.get_current_pose().pose
         wpose.position.z -= scale * 0.1
-        wpose.position.y += scale * 0.2
+        #wpose.position.y += scale * 0.2
         waypoints.append(copy.deepcopy(wpose))
 
-        wpose.position.x += scale * 0.1
+        #wpose.position.x += scale * 0.1
+        wpose.position.z -= scale * 0.1
         waypoints.append(copy.deepcopy(wpose))
 
-        wpose.position.y -= scale * 0.1
+        #wpose.position.y -= scale * 0.1
+        wpose.position.z -= scale * 0.1
         waypoints.append(copy.deepcopy(wpose))
 
         (plan, fraction) = move_group.compute_cartesian_path(
@@ -214,8 +292,15 @@ class MoveGroupPythonIntefaceTutorial(object):
                                            0.01,        # eef_step
                                            0.0)         # jump_threshold
 
+        #self.plan = plan
+        #print(plan) #plan.joint_trajectory.points
+        #print(plan.joint_trajectory.points[0].positions)
+        #print(plan.joint_trajectory.points[1].positions)
+        #print(plan.joint_trajectory.points[2].positions)
+        #print(fraction)
         return plan, fraction
 
+    # Metodo para enviar o planejamento para o rviz
     def display_trajectory(self, plan):
         robot = self.robot
         display_trajectory_publisher = self.display_trajectory_publisher
@@ -226,6 +311,7 @@ class MoveGroupPythonIntefaceTutorial(object):
 
         display_trajectory_publisher.publish(display_trajectory);
 
+    # Metodo para executar o planejamento no gazebo
     def execute_plan(self, plan):
         move_group = self.move_group
 
@@ -235,22 +321,41 @@ def main():
     try:
         #print "============ Press `Enter`..."
         #raw_input()
+        # Cria objeto da classe
         tutorial = MoveGroupPythonIntefaceTutorial()
         #print "============ Press `Enter`..."
         #raw_input()
         #tutorial.go_to_joint_state()
-        print "============ Press `Enter`..."
+        #print("============ Press `Enter`...")
+        #raw_input()
+        #tutorial.add_box()
+        print("============ Press `Enter`...")
         raw_input()
-        tutorial.add_box()
-        print "============ Press `Enter`..."
-        raw_input()
+        # Calcula o planejamento
         tutorial.go_to_pose_goal()
-        print "============ Press `Enter`..."
+        print("============ Press `Enter`...")
         raw_input()
+        # Executa o planejamento no vrep
         tutorial.executar()
-        print "============ Press `Enter`..."
-        raw_input()
-        tutorial.remove_box()
+        #print("============ Press `Enter`...")
+        #raw_input()
+        #cartesian_plan, fraction = tutorial.plan_cartesian_path(scale=-1)
+        #for juntas in cartesian_plan.joint_trajectory.points:
+        #    print(juntas.positions)
+        #    tutorial.executar(list(juntas.positions))
+        #    rospy.sleep(0.1)
+
+        #print("============ Press `Enter`...")
+        #print(cartesian_plan.joint_trajectory.points[0].positions)
+        #print(cartesian_plan.joint_trajectory.points[1].positions)
+        #tutorial.display_trajectory(cartesian_plan)
+        #tutorial.execute_plan(cartesian_plan)
+        #print("============ Press `Enter`...")
+        #raw_input()
+        #tutorial.executar()
+        #print("============ Press `Enter`...")
+        #raw_input()
+        #tutorial.remove_box()
         #print "============ Press `Enter`..."
         #raw_input()
         #cartesian_plan, fraction = tutorial.plan_cartesian_path()
