@@ -9,8 +9,8 @@ from geometry_msgs.msg import Twist
 class RosiNodeClass():
 
 	# class attributes
-	max_translational_speed = 4.8 # in [m/s]
-	max_rotational_speed = 9.08 # in [rad/s]
+	max_translational_speed = 0.5 # in [m/s]
+	max_rotational_speed = 1 # in [rad/s]
 
 	# how to obtain these values? see Mandow et al. COMPLETE THIS REFERENCE
 	var_lambda = 0.965

@@ -7,9 +7,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp> 
+//#include <limits>
 
+//#define INF ((unsigned) ~0)
 namespace enc = sensor_msgs::image_encodings;
-
+//uint16_t inf = std::numeric_limits<T>::infinity();
 class ImageConverter
 {
   ros::NodeHandle nh_;
@@ -36,11 +38,11 @@ public:
 
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
-    cv_bridge::CvImageConstPtr cv_ptr;
+    cv_bridge::CvImagePtr cv_ptr;
 
     	try
     	{
-   	   cv_ptr = cv_bridge::toCvCopy(msg);
+   	   cv_ptr = cv_bridge::toCvCopy(msg, enc::TYPE_16UC1);
    	   //cv_ptr = cv_bridge::toCvCopy(img, enc::MONO8);
   	  }
   	  catch (cv_bridge::Exception& e)
@@ -49,6 +51,23 @@ public:
    	   return;
   	  }
   	  cv::flip(cv_ptr->image, cv_ptr->image, +1);
+
+      //uint16_t dist = cv_ptr->image.at<uint16_t>(480,0);
+      //std::cout << dist << std::endl;
+
+      //for (int i=0; i<cv_ptr->image.rows; i++)
+      
+      //  for (int j=0; j<cv_ptr->image.cols; j++)
+      //  {
+      //    uint16_t dist = cv_ptr->image.at<uint16_t>(i,j);
+          //std::cout << dist << std::endl;
+      //    if (dist = 3500) 
+      //    {
+            //std::cout << "Pixel =0 :" << i << "," << j << "," << dist << std::endl;
+            //cv_ptr->image.at<uint16_t>(i,j)= 0;
+      //    }
+      //  }
+      //}
 
   	  // Output modified video stream
   	  image_pub_.publish(cv_ptr->toImageMsg());

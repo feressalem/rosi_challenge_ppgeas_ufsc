@@ -127,7 +127,7 @@
   <arg name="rviz"                    default="false" />
   
   <!-- Localization-only mode -->
-  <arg name="localization"            default="false"/>
+  <arg name="localization"            default="true"/>
   
   <!-- sim time for convenience, if playing a rosbag -->
   <arg name="use_sim_time"            default="false"/>
@@ -467,5 +467,13 @@
     <param name="approx_sync" type="bool"   value="$(arg approx_sync)"/>
   </node>
 
-</launch>
+ <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find ppgeas)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find ppgeas)/config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find ppgeas)/config/base_local_planner_params.yaml" command="load" />
+ </node>
 
+</launch>
+  
