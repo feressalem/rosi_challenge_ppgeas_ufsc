@@ -9,8 +9,8 @@ from sensor_msgs.msg import Joy
 class RosiNodeClass():
 
 	# class attributes
-	max_translational_speed = 2 # in [m/s]
-	max_rotational_speed = 4 # in [rad/s]
+	max_translational_speed = 0.5 # in [m/s]
+	max_rotational_speed = 1 # in [rad/s]
 	max_arms_rotational_speed = 0.52 # in [rad/s]
 
 	# how to obtain these values? see Mandow et al. COMPLETE THIS REFERENCE
@@ -35,7 +35,7 @@ class RosiNodeClass():
 
 		# registering to publishers
 		self.pub_traction = rospy.Publisher('/rosi/command_traction_speed', RosiMovementArray, queue_size=1)
-		self.pub_arm = rospy.Publisher('/rosi/command_arms_speed', RosiMovementArray, queue_size=1)
+
 
 		# registering to subscribers
 		self.sub_joy = rospy.Subscriber('/joy', Joy, self.callback_Joy)
@@ -67,23 +67,8 @@ class RosiNodeClass():
 				# appending the command to the list
 				traction_command_list.movement_array.append(traction_command)
 
-				# ----- treating the arms commands		
-				arm_command = RosiMovement()
-		
-				# mounting arm command list
-				arm_command.nodeID = i+1
-				
-				# separates each arm side command
-				if i == 0 or i == 2:
-					arm_command.joint_var = self.arm_front_rotSpeed
-				else:
-					arm_command.joint_var = self.arm_rear_rotSpeed
-
-				# appending the command to the list
-				arm_command_list.movement_array.append(arm_command)
-
 			# publishing
-			self.pub_arm.publish(arm_command_list)		
+	
 			self.pub_traction.publish(traction_command_list)
 
 			# sleeps for a while

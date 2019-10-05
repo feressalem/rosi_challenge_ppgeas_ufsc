@@ -60,7 +60,7 @@ $ catkin build
 ```
 ## The robot is not moving autonomously yet, team is still working on mapping and ur-5 control parameters, for now mapping can be seen from mapping.launch. (29/09/2019)
 
-## Obs.: Rviz has some kind of issue with floating points in urdf, in order to load robor description correctly in Rviz append the following code to your .bashrc file.
+## Obs.: Rviz has some kind of issue with floating points in urdf, in order to load robot description correctly in Rviz append the following code to your .bashrc file.
 ```
 $ echo 'export LC_NUMERIC='en_US.UTF-8'' >> ~/.bashrc 
 ```
