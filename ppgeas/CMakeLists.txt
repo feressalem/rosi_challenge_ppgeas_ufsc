@@ -160,6 +160,7 @@ add_executable(kinect_converter_depth src/kinect_converter_depth.cpp)
 add_executable(pcl_conv src/pointcloud_converter.cpp)
 add_executable(pcl_tf src/pcl_tf.cpp)
 add_executable(move_group_interface src/moveit_interface.cpp)
+add_executable(set_odom_pose_node src/set_odom_pose.cpp)
 
 # Define compile flags
 set_target_properties(kinect_converter PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
@@ -193,7 +194,9 @@ target_link_libraries(move_group_interface
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
 )
-
+target_link_libraries(set_odom_pose_node
+ ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
