@@ -1,15 +1,22 @@
 <launch>
 
 	<!-- Publish static transforms -->
-	<!-- node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" / -->
+	<node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" />
 	<node name="bl_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link imu" />
+        <node name="bl_velodyne_straight" pkg="tf2_ros" type="static_transform_publisher" args="0.242 0.002 0.1655 0 0 0 1 base_link velodyne_new" />
         <!-- node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 -0.0871557 0 0.9961947 base_link camera_link" / -->
-        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 0 0 1 base_link camera_link" />
+        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.009 0 0 0 1 base_link camera_link" />
 	<!-- OBS: kinect position and orientation tuned empirically -->
 	<!-- Load reasonable defaults for the relative pose between cameras -->
   	<include file="$(find rgbd_launch)/launch/kinect_frames.launch">
  	   <arg name="camera" value="camera" />
 	</include>
+
+
+ 	 <arg name="map_file" default="$(find ppgeas)/config/mymap.yaml"/>
+ 	 <!-- Run the map server -->
+ 	 <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
 
 
 	<arg name="model_rosi" default="$(find rosi_defy)/urdf/rosi.urdf" />
@@ -27,13 +34,13 @@
 	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" / -->
 
         <!-- running the joystick node -->
-	<node name="joy_node" pkg="joy" type="joy_node" respawn="true" />
+	<!--node name="joy_node" pkg="joy" type="joy_node" respawn="true" / -->
 
 	<!-- running the rosi joystick example node -->
-	<node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/>
+	<!--node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/ -->
 
 	<!-- load simulation config params -->
-	<rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml" />
+	<!-- rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml"/ -->
 
 	<!-- running the rosi arms controller node -->
 	<node name="control_arm_speed" pkg="ppgeas" type="control_arm_speed.py" respawn="true"/>
@@ -42,10 +49,13 @@
 	<node name="kinect_angle_controller" pkg="ppgeas" type="set_kinect_angle_node.py" respawn="true"/>
 
 	<!-- running the rosi base controller node -->
-	<!-- node name="base_controller_node" pkg="ppgeas" type="base_controller.py" respawn="true"/ -->
+	<node name="base_controller_node" pkg="ppgeas" type="base_controller.py" respawn="true"/>
+
+	<!-- running the state machine node -->
+	<node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/>
 
 	<!-- reset odometry to static_rosiInitialPose -->
-	<node name="set_odom_pose_node" pkg="ppgeas" type="set_odom_pose_node" respawn="false"/>
+	<!--node name="set_odom_pose_node" pkg="ppgeas" type="set_odom_pose_node" respawn="false"/ -->
 
 	<!-- transfer velodyne pointoclouds to base_link frame_id -->
         <node name="pcl_tf" pkg="ppgeas" type="pcl_tf" />
@@ -53,12 +63,14 @@
 	<!-- convert transferred velodyne pointoclouds to 2d laserscan -->
         <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
 
-        <remap from="cloud_in" to="/sensor/velodyne_bl"/>
+        <remap from="cloud_in" to="/sensor/velodyne_new"/>
         <remap from="scan" to="/sensor/velodyne_scan"/>
         <rosparam>
             transform_tolerance: 0.01
-            min_height: 0.1
-            max_height: 0.4
+           # min_height: 0.2
+           # max_height: 0.4
+            min_height: -0.15
+            max_height: 0.1
 
             angle_min: -1.5708 #-0.7854 # -M_PI/2
             angle_max: 1.5708 # M_PI/2
@@ -126,8 +138,8 @@
   <arg name="stereo"          default="false"/>
  
   <!-- Choose visualization -->
-  <arg name="rtabmapviz"              default="true" /> 
-  <arg name="rviz"                    default="false" />
+  <arg name="rtabmapviz"              default="false" /> 
+  <arg name="rviz"                    default="true" />
   
   <!-- Localization-only mode -->
   <arg name="localization"            default="false"/>
@@ -154,7 +166,7 @@
   <arg name="rtabmap_args"            default="$(arg args)"/>   <!-- deprecated, use "args" argument -->
   <arg name="launch_prefix"           default=""/>              <!-- for debugging purpose, it fills launch-prefix tag of the nodes -->
   <arg name="output"                  default="screen"/>        <!-- Control node output (screen or log) -->
-  <arg name="publish_tf_map"          default="true"/>
+  <arg name="publish_tf_map"          default="false"/>
 
   <!-- if timestamps of the input topics are synchronized using approximate or exact time policy-->
   <arg     if="$(arg stereo)" name="approx_sync"  default="false"/>
@@ -391,6 +403,9 @@
 
           <param name="Reg/Force3DoF"             type="string" value="true"/>
           <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->    
+          <param name="use_action_for_goal" type="bool" value="true"/>
+      <remap from="move_base"            to="/move_base"/>
+      <!-- remap from="grid_map" to="/map"/ -->
       
       <remap from="rgb/image"       to="$(arg rgb_topic_relay)"/>
       <remap from="depth/image"     to="$(arg depth_topic_relay)"/>
@@ -449,7 +464,6 @@
       <remap from="scan_cloud"             to="$(arg scan_cloud_topic)"/>
       <remap from="odom"                   to="$(arg odom_topic)"/>
     </node>
-  
   </group>
   
   <!-- Visualization RVIZ -->
@@ -469,6 +483,13 @@
     <param name="voxel_size"  type="double" value="0.0"/>
     <param name="approx_sync" type="bool"   value="$(arg approx_sync)"/>
   </node>
-
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+      <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+      <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+      <rosparam file="$(find ppgeas)/config/local_costmap_params.yaml" command="load" />
+      <rosparam file="$(find ppgeas)/config/global_costmap_params.yaml" command="load" /> 
+      <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+      <rosparam file="$(find ppgeas)/config/base_local_planner_params.yaml" command="load" />
+    </node>
 </launch>
 

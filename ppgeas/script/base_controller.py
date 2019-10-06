@@ -38,7 +38,7 @@ class RosiNodeClass():
 		self.pub_traction = rospy.Publisher('/rosi/command_traction_speed', RosiMovementArray, queue_size=1)
 
 		# registering to subscribers
-		self.sub_cmd_vel = rospy.Subscriber('/rosi/cmd_vel', Twist, self.callback_cmd)
+		self.sub_cmd_vel = rospy.Subscriber('/cmd_vel', Twist, self.callback_cmd)
 
 		# defining the eternal loop frequency
 		node_sleep_rate = rospy.Rate(10)
