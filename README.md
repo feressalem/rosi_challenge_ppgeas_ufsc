@@ -28,16 +28,13 @@ This repository is structured as a ROS package. The folders organization is as f
 The simulator was conceived using **Ubuntu 18.4.2**, **ROS Melodic**, and **V-REP 3.6.2 (rev.0)**. Another software versions might work, but they are not recommended nor officially supported for the competition. 
 
 ## Install rosi_challenge_ppgeas_ufsc package
+By covention on this installation steps, all boxes starting with a `$` mark means that you should run the command on the terminal.
 ```
 $ cd ~/catkin_ws/src
 $ git clone https://github.com/feressalem/rosi_challenge_ppgeas_ufsc.git
 $ cd ..
 $ catkin build
 ```
-
-## Dependencies installation advices
-
-By covention on this installation steps, all boxes starting with a `$` mark means that you should run the command on the terminal. 
 
 ## All Dependencies installation via Rosdep
 After cloning our repository, it is possible to install all dependencies listed in the file package.xml by running the following commands:
