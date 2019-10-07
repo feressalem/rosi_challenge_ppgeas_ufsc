@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 import roslib
-roslib.load_manifest('rosi_challenge_ppgeas_ufsc')
+roslib.load_manifest('ppgeas')
 import sys
 import rospy
 import cv2
@@ -10,7 +10,7 @@ import numpy
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-from rosi_challenge_ppgeas_ufsc.srv import DetectFire,DetectFireResponse
+from ppgeas.srv import DetectFire,DetectFireResponse
 
 kernel = numpy.ones((5 ,5), numpy.uint8)
 #ctrX = 0;

@@ -54,6 +54,9 @@
 	<!-- running the state machine node -->
 	<node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/>
 
+	<!-- running the fire detection node -->
+	<node name="fire_detec" pkg="ppgeas" type="fire_detection.py" respawn="true"/>
+
 	<!-- reset odometry to static_rosiInitialPose -->
 	<!--node name="set_odom_pose_node" pkg="ppgeas" type="set_odom_pose_node" respawn="false"/ -->
 
@@ -139,7 +142,7 @@
  
   <!-- Choose visualization -->
   <arg name="rtabmapviz"              default="false" /> 
-  <arg name="rviz"                    default="true" />
+  <arg name="rviz"                    default="false" />
   
   <!-- Localization-only mode -->
   <arg name="localization"            default="false"/>
@@ -402,6 +405,7 @@
       <param name="landmark_angular_variance"  type="double" value="$(arg tag_angular_variance)"/>  
 
           <param name="Reg/Force3DoF"             type="string" value="true"/>
+	  <param name="Optimizer/Slam2D" value="true" />
           <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->    
           <param name="use_action_for_goal" type="bool" value="true"/>
       <remap from="move_base"            to="/move_base"/>
