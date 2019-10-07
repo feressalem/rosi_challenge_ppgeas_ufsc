@@ -31,25 +31,20 @@ The simulator was conceived using **Ubuntu 18.4.2**, **ROS Melodic**, and **V-RE
 
 By covention on this installation steps, all boxes starting with a `$` mark means that you should run the command on the terminal. 
 
-## Install move_base
+## All Dependencies installation by Rosdep
+Get into the catkin workspace folder and execute the following command to install all dependencies listed in the file package.xml
 ```
-sudo apt-get install ros-melodic-move-base
+$ rosdep install --from-paths src --ignore-src -r -y
 ```
-## Install moveit
+## Install move_base, moveit, rgbd_launch, eigen, RtabMap_ros
 ```
-sudo apt-get install ros-melodic-moveit
-```
-## Install rgbd_launch
-```
-sudo apt-get install ros-melodic-rgbd-launch
-```
-## Install eigen
-```
-sudo apt-get install libeigen3-dev
-```
-## Install RtabMap_ros binaries
-```
+$ sudo apt-get install ros-melodic-move-base
+$ sudo apt-get install ros-melodic-moveit
+$ sudo apt-get install ros-melodic-rgbd-launch
+$ sudo apt-get install libeigen3-dev
 $ sudo apt-get install ros-melodic-rtabmap-ros
+$ sudo apt-get install ros-melodic-dwa-local-planner
+$ sudo apt-get install ros-melodic-map-server
 ```
 ## Install rosi_challenge_ppgeas_ufsc package
 ```
@@ -60,7 +55,29 @@ $ catkin build
 ```
 ## The robot is not moving autonomously yet, team is still working on mapping and ur-5 control parameters, for now mapping can be seen from mapping.launch. (29/09/2019)
 
-## Obs.: Rviz has some kind of issue with floating points in urdf, in order to load robot description correctly in Rviz append the following code to your .bashrc file.
+## Running the solution
+We made three options to run our solution:
+Option 1:
+```
+$ roslaunch ppgeas mapping.launch rtabmap_args:="--delete_db_on_start"
+```
+Option 2:
+```
+$ roslaunch ppgeas mapping.launch rtabmap_args:="--delete_db_on_start" rtabmapviz:=true
+```
+Option 3:
+```
+$ roslaunch ppgeas mapping.launch rtabmap_args:="--delete_db_on_start" rviz:=true
+```
+
+## Fire detection
+The fire detection may be seem by the image in the topic /fire_test
+
+## Obs. 1: Bug detected in the timestamp
+Due to a bug detected related to the images timestamp, our solution resulted in a very slow simulation time, what made difficult to run the touch tests from the UR-5, even when disabling the simulation rendering.
+
+## Obs. 2: Issue with floating points in urdf
+Rviz has some kind of issue with floating points in urdf, in order to load robot description correctly in Rviz append the following code to your .bashrc file.
 ```
 $ echo 'export LC_NUMERIC='en_US.UTF-8'' >> ~/.bashrc 
 ```
