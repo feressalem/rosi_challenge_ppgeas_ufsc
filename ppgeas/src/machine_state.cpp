@@ -9,7 +9,7 @@
 #include <geometry_msgs/Twist.h>
 #include <rtabmap_ros/ResetPose.h>
 #include <std_srvs/Empty.h>
-#include <ppgeas/DetectFire.h>
+
 
 float array_arm_pos[2] = {};
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -47,7 +47,6 @@ int main(int argc, char** argv){
   move_base_msgs::MoveBaseGoal goal;
   rtabmap_ros::ResetPose pose;
   std_srvs::Empty c;
-  ppgeas::DetectFire f;
   while (ros::ok())
     {
     if (State == 0){
@@ -226,8 +225,8 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -18.0;
-      goal.target_pose.pose.position.y = 2.6;
+      goal.target_pose.pose.position.x = -36.0;
+      goal.target_pose.pose.position.y = 3.5;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -255,8 +254,8 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -47.0;
-      goal.target_pose.pose.position.y = 5.0;
+      goal.target_pose.pose.position.x = -40.0;
+      goal.target_pose.pose.position.y = -4.0;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -284,8 +283,8 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -47.0;
-      goal.target_pose.pose.position.y = -5.0;
+      goal.target_pose.pose.position.x = -5.0;
+      goal.target_pose.pose.position.y = -3.0;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
