@@ -99,7 +99,7 @@ int main(int argc, char** argv){
         if (spawner2.call(c))
         {
             ROS_INFO("Mudando estado");
-            State++;
+            State = 20; //MUDEI AQUI
             
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");

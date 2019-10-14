@@ -69,8 +69,11 @@ public:
       //  }
       //}
 
-  	  // Output modified video stream
-  	  image_pub_.publish(cv_ptr->toImageMsg());
+
+
+      // Output modified video stream
+      image_pub_.publish(cv_ptr->toImageMsg());
+
 	
   }
 };

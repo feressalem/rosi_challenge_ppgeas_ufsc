@@ -52,7 +52,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
  	sensor_msgs::CameraInfo info;
   	  info.header = msg->header;
- 	  info.header.frame_id = "camera_rgb_optical_frame";
+ 	    info.header.frame_id = "camera_rgb_optical_frame";
   	  info.height = msg->height;
   	  info.width = msg->width;
   	  info.distortion_model = "plumb_bob";
@@ -74,8 +74,10 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
   	  info.roi.width = 0;
   	  info.roi.do_rectify = 0;
 
+
   	  // Output modified video stream
   	  image_pub_.publish(cv_ptr->toImageMsg());
+
    	  image_info_pub_.publish(info);
 	
    }
