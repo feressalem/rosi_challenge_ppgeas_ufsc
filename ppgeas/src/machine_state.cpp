@@ -273,7 +273,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -26.0;
-      goal.target_pose.pose.position.y = 2.6;
+      goal.target_pose.pose.position.y = 2.8;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;      
@@ -303,7 +303,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -33.0;
-      goal.target_pose.pose.position.y = 2.8;
+      goal.target_pose.pose.position.y = 3.4;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -332,7 +332,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -40.0;
-      goal.target_pose.pose.position.y = 3.0;
+      goal.target_pose.pose.position.y = 3.8;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -353,35 +353,12 @@ int main(int argc, char** argv){
       }
 
     }
-    if (State == 11){
+    if (State == 11){ // Em frente à escada
       
-     ROS_INFO("Estado 11 : navegacao 7");
-
-      goal.target_pose.header.frame_id = "map";
-      goal.target_pose.header.stamp = ros::Time::now();
-
-      goal.target_pose.pose.position.x = -47.0;
-      goal.target_pose.pose.position.y = 3.2;
-      goal.target_pose.pose.position.z = 0.0;
-      goal.target_pose.pose.orientation.x = 0.0;
-      goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = 1.0;
-      goal.target_pose.pose.orientation.w = 0.0;
-
-      ROS_INFO("Sending goal");
-      ac.sendGoal(goal);
-
-      ac.waitForResult();
-
-      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-        ROS_INFO("Hooray, the base moved to the finish goal");
-        State++;
-      }
-      else{
-        ROS_INFO("The base failed to move forward 1 meter for some reason");
-      }
-
+     ROS_INFO("Estado 11 : Praticamente pronto pra subir a escada");
+     State=20;
     }
+
     if (State == 12){
       
      ROS_INFO("Estado 9 : navegacao 7");
