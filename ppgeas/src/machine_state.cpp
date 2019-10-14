@@ -38,6 +38,8 @@ int main(int argc, char** argv){
   ros::ServiceClient spawner = n.serviceClient<rtabmap_ros::ResetPose>("/rtabmap/reset_odom_to_pose");
   ros::service::waitForService("/rtabmap/reset");
   ros::ServiceClient spawner2 = n.serviceClient<std_srvs::Empty>("/rtabmap/reset");
+  ros::service::waitForService("/move_base/clear_costmaps");
+  ros::ServiceClient spawner3 = n.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");  
 
 
   tf2_ros::Buffer tfBuffer;
@@ -99,7 +101,16 @@ int main(int argc, char** argv){
         if (spawner2.call(c))
         {
             ROS_INFO("Mudando estado");
-            State = 20; //MUDEI AQUI
+            // State++; //MUDEI de volta
+            
+        } else {
+            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
+            return 1;
+        } 
+        if (spawner3.call(c))
+        {
+            ROS_INFO("Limpando costmaps");
+            State++; //MUDEI de volta
             
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
@@ -112,13 +123,13 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = 0.0;
-      goal.target_pose.pose.position.y = 0.0;
+      goal.target_pose.pose.position.x = -1.0;
+      goal.target_pose.pose.position.y = 2.0;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = 0.9063078;
-      goal.target_pose.pose.orientation.w = 0.4226183;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
 
       ROS_INFO("Sending goal");
       ac.sendGoal(goal);
@@ -137,16 +148,16 @@ int main(int argc, char** argv){
     if (State == 3){
       ROS_INFO("Estado 3 : navegacao 2");
 
-      goal.target_pose.header.frame_id = "base_link";
+      goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = 4.0;
-      goal.target_pose.pose.position.y = 0.0;
+      goal.target_pose.pose.position.x = -3.0;
+      goal.target_pose.pose.position.y = 2.2;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = 0.0;
-      goal.target_pose.pose.orientation.w = 1.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
 
       ROS_INFO("Sending goal");
       ac.sendGoal(goal);
@@ -168,8 +179,8 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -9.0;
-      goal.target_pose.pose.position.y = 2.6;
+      goal.target_pose.pose.position.x = -5.5;
+      goal.target_pose.pose.position.y = 1.9;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -190,33 +201,11 @@ int main(int argc, char** argv){
       }
     }
 
-    if (State == 5){
+    if (State == 5){ // Enfiar o Braço até o rolo
       
-      ROS_INFO("Estado 5 : navegacao 4");
+      ROS_INFO("Estado 5 : Tocar o rolo");
 
-      goal.target_pose.header.frame_id = "map";
-      goal.target_pose.header.stamp = ros::Time::now();
-
-      goal.target_pose.pose.position.x = -18.0;
-      goal.target_pose.pose.position.y = 2.6;
-      goal.target_pose.pose.position.z = 0.0;
-      goal.target_pose.pose.orientation.x = 0.0;
-      goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = 1.0;
-      goal.target_pose.pose.orientation.w = 0.0;
-
-      ROS_INFO("Sending goal");
-      ac.sendGoal(goal);
-
-      ac.waitForResult();
-
-      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-        ROS_INFO("Hooray, the base moved to a long goal");
-        State++;
-      }
-      else{
-        ROS_INFO("The base failed to move forward 1 meter for some reason");
-      }
+      State++;
     }
     if (State == 6){
       
@@ -225,8 +214,8 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -36.0;
-      goal.target_pose.pose.position.y = 3.5;
+      goal.target_pose.pose.position.x = -12.0;
+      goal.target_pose.pose.position.y = 2.2;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -254,13 +243,13 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -40.0;
-      goal.target_pose.pose.position.y = -4.0;
+      goal.target_pose.pose.position.x = -19.0;
+      goal.target_pose.pose.position.y = 2.4;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = -0.7071068;
-      goal.target_pose.pose.orientation.w = 0.7071068;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
 
       ROS_INFO("Sending goal");
       ac.sendGoal(goal);
@@ -283,13 +272,14 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -5.0;
-      goal.target_pose.pose.position.y = -3.0;
+      goal.target_pose.pose.position.x = -26.0;
+      goal.target_pose.pose.position.y = 2.6;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
-      goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = 0.0;
-      goal.target_pose.pose.orientation.w = 1.0;
+      goal.target_pose.pose.orientation.y = 0.0;      
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
+
 
       ROS_INFO("Sending goal");
       ac.sendGoal(goal);
@@ -312,13 +302,13 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -5.0;
-      goal.target_pose.pose.position.y = -3.0;
+      goal.target_pose.pose.position.x = -33.0;
+      goal.target_pose.pose.position.y = 2.8;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = 0.0;
-      goal.target_pose.pose.orientation.w = 1.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
 
       ROS_INFO("Sending goal");
       ac.sendGoal(goal);
@@ -328,6 +318,180 @@ int main(int argc, char** argv){
       if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
         ROS_INFO("Hooray, the base moved to the finish goal");
         State++;
+      }
+      else{
+        ROS_INFO("The base failed to move forward 1 meter for some reason");
+      }
+
+    }
+    if (State == 10){
+      
+     ROS_INFO("Estado 10 : navegacao 8");
+
+      goal.target_pose.header.frame_id = "map";
+      goal.target_pose.header.stamp = ros::Time::now();
+
+      goal.target_pose.pose.position.x = -40.0;
+      goal.target_pose.pose.position.y = 3.0;
+      goal.target_pose.pose.position.z = 0.0;
+      goal.target_pose.pose.orientation.x = 0.0;
+      goal.target_pose.pose.orientation.y = 0.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
+
+      ROS_INFO("Sending goal");
+      ac.sendGoal(goal);
+
+      ac.waitForResult();
+
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        ROS_INFO("Hooray, the base moved to the finish goal");
+        State++;
+      }
+      else{
+        ROS_INFO("The base failed to move forward 1 meter for some reason");
+      }
+
+    }
+    if (State == 11){
+      
+     ROS_INFO("Estado 11 : navegacao 7");
+
+      goal.target_pose.header.frame_id = "map";
+      goal.target_pose.header.stamp = ros::Time::now();
+
+      goal.target_pose.pose.position.x = -47.0;
+      goal.target_pose.pose.position.y = 3.2;
+      goal.target_pose.pose.position.z = 0.0;
+      goal.target_pose.pose.orientation.x = 0.0;
+      goal.target_pose.pose.orientation.y = 0.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
+
+      ROS_INFO("Sending goal");
+      ac.sendGoal(goal);
+
+      ac.waitForResult();
+
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        ROS_INFO("Hooray, the base moved to the finish goal");
+        State++;
+      }
+      else{
+        ROS_INFO("The base failed to move forward 1 meter for some reason");
+      }
+
+    }
+    if (State == 12){
+      
+     ROS_INFO("Estado 9 : navegacao 7");
+
+      goal.target_pose.header.frame_id = "map";
+      goal.target_pose.header.stamp = ros::Time::now();
+
+      goal.target_pose.pose.position.x = -54.0;
+      goal.target_pose.pose.position.y = 3.4;
+      goal.target_pose.pose.position.z = 0.0;
+      goal.target_pose.pose.orientation.x = 0.0;
+      goal.target_pose.pose.orientation.y = 0.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
+
+      ROS_INFO("Sending goal");
+      ac.sendGoal(goal);
+
+      ac.waitForResult();
+
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        ROS_INFO("Hooray, the base moved to the finish goal");
+        State++;
+      }
+      else{
+        ROS_INFO("The base failed to move forward 1 meter for some reason");
+      }
+
+    }
+    if (State == 13){
+      
+     ROS_INFO("Estado 9 : navegacao 7");
+
+      goal.target_pose.header.frame_id = "map";
+      goal.target_pose.header.stamp = ros::Time::now();
+
+      goal.target_pose.pose.position.x = -61.0;
+      goal.target_pose.pose.position.y = 3.6;
+      goal.target_pose.pose.position.z = 0.0;
+      goal.target_pose.pose.orientation.x = 0.0;
+      goal.target_pose.pose.orientation.y = 0.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
+
+      ROS_INFO("Sending goal");
+      ac.sendGoal(goal);
+
+      ac.waitForResult();
+
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        ROS_INFO("Hooray, the base moved to the finish goal");
+        State++;
+      }
+      else{
+        ROS_INFO("The base failed to move forward 1 meter for some reason");
+      }
+
+    }
+    if (State == 14){
+      
+     ROS_INFO("Estado 9 : navegacao 7");
+
+      goal.target_pose.header.frame_id = "map";
+      goal.target_pose.header.stamp = ros::Time::now();
+
+      goal.target_pose.pose.position.x = -68.0;
+      goal.target_pose.pose.position.y = 3.8;
+      goal.target_pose.pose.position.z = 0.0;
+      goal.target_pose.pose.orientation.x = 0.0;
+      goal.target_pose.pose.orientation.y = 0.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
+
+      ROS_INFO("Sending goal");
+      ac.sendGoal(goal);
+
+      ac.waitForResult();
+
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        ROS_INFO("Hooray, the base moved to the finish goal");
+        State++;
+      }
+      else{
+        ROS_INFO("The base failed to move forward 1 meter for some reason");
+      }
+
+    }
+    if (State == 15){
+      
+     ROS_INFO("Estado 9 : navegacao 7");
+
+      goal.target_pose.header.frame_id = "map";
+      goal.target_pose.header.stamp = ros::Time::now();
+
+      goal.target_pose.pose.position.x = -75.0;
+      goal.target_pose.pose.position.y = 4.0;
+      goal.target_pose.pose.position.z = 0.0;
+      goal.target_pose.pose.orientation.x = 0.0;
+      goal.target_pose.pose.orientation.y = 0.0;
+      goal.target_pose.pose.orientation.z = 1.0;
+      goal.target_pose.pose.orientation.w = 0.0;
+
+      ROS_INFO("Sending goal");
+      ac.sendGoal(goal);
+
+      ac.waitForResult();
+
+      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        ROS_INFO("Hooray, the base moved to the finish goal");
+        State=20;
       }
       else{
         ROS_INFO("The base failed to move forward 1 meter for some reason");

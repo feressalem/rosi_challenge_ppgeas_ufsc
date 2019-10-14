@@ -53,6 +53,7 @@
   <depend>rgbd_launch</depend>
   <depend>dwa_local_planner</depend>
   <depend>map_server</depend>
+  <depend>navigation</depend>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>move_base</build_depend>
   <build_depend>sensor_msgs</build_depend>
