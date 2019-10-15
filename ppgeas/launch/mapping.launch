@@ -13,9 +13,10 @@
 	</include>
 
 
- 	 <!-- arg name="map_file" default="$(find ppgeas)/config/mymap.yaml"/ -->
+ 	 <arg name="map_file" default="$(find ppgeas)/config/mymap.yaml" />
  	 <!-- Run the map server -->
- 	 <!-- node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" / -->
+ 	 <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
 
 
 
@@ -404,12 +405,12 @@
       <param name="landmark_linear_variance"   type="double" value="$(arg tag_linear_variance)"/>
       <param name="landmark_angular_variance"  type="double" value="$(arg tag_angular_variance)"/>  
 
-          <param name="Reg/Force3DoF"             type="string" value="true"/>
-	  <param name="Optimizer/Slam2D" value="true" />
-          <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->    
-          <param name="use_action_for_goal" type="bool" value="true"/>
-      <remap from="move_base"            to="/move_base"/>
-      <remap from="grid_map" to="/map"/>
+      <param name="Reg/Force3DoF"             type="string" value="true"/>
+      <param name="Optimizer/Slam2D" value="true" />
+      <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->    
+      <!-- param name="use_action_for_goal" type="bool" value="true"/ -->
+      <!-- remap from="move_base"            to="/move_base"/ -->
+      <!-- remap from="grid_map" to="/map"/ -->
       
       <remap from="rgb/image"       to="$(arg rgb_topic_relay)"/>
       <remap from="depth/image"     to="$(arg depth_topic_relay)"/>
@@ -493,8 +494,9 @@
       <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
       <rosparam file="$(find ppgeas)/config/local_costmap_params.yaml" command="load" />
       <rosparam file="$(find ppgeas)/config/global_costmap_params.yaml" command="load" /> 
-      <!--param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" /-->
+      <!--param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" / -->
       <rosparam file="$(find ppgeas)/config/base_local_planner_params.yaml" command="load" />
+      <rosparam file="$(find ppgeas)/config/move_base_params.yaml" command="load" />
     </node>
 </launch>
 

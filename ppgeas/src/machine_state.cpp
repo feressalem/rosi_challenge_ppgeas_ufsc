@@ -9,6 +9,7 @@
 #include <geometry_msgs/Twist.h>
 #include <rtabmap_ros/ResetPose.h>
 #include <std_srvs/Empty.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 
 float array_arm_pos[2] = {};
@@ -41,10 +42,12 @@ int main(int argc, char** argv){
   ros::service::waitForService("/move_base/clear_costmaps");
   ros::ServiceClient spawner3 = n.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");  
 
+  ros::Publisher initPosePub_ = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 2, true);
 
   tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformListener tfListener(tfBuffer);
   geometry_msgs::TransformStamped transformStamped;
+  geometry_msgs::PoseWithCovarianceStamped initPose_;
   
   move_base_msgs::MoveBaseGoal goal;
   rtabmap_ros::ResetPose pose;
@@ -52,6 +55,27 @@ int main(int argc, char** argv){
   while (ros::ok())
     {
     if (State == 0){
+        try{
+        transformStamped = tfBuffer.lookupTransform("map", "static_rosiInitialPose",
+                                 ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+          ROS_WARN("%s",ex.what());
+          ros::Duration(1.0).sleep();
+          continue;
+        }
+        initPose_.header.stamp = ros::Time::now();
+        initPose_.header.frame_id = "map";
+      //position
+        initPose_.pose.pose.position.x = transformStamped.transform.translation.x;
+        initPose_.pose.pose.position.y = transformStamped.transform.translation.y;
+      //angle
+        initPose_.pose.pose.orientation.x = transformStamped.transform.rotation.x;
+        initPose_.pose.pose.orientation.y = transformStamped.transform.rotation.y;
+        initPose_.pose.pose.orientation.z = transformStamped.transform.rotation.z;
+        initPose_.pose.pose.orientation.w = transformStamped.transform.rotation.w;
+      //publish msg
+        initPosePub_.publish(initPose_);
       if (::array_arm_pos[0] <= -2){
         ROS_INFO("mudando estado");
         State++;
@@ -81,6 +105,8 @@ int main(int argc, char** argv){
         pose.request.roll = 0;
         pose.request.pitch = 0;
         pose.request.yaw = yaw;
+
+
 
         if (spawner.call(pose))
         {
