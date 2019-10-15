@@ -33,6 +33,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_eigen
   tf2_geometry_msgs
   genmsg
+  teb_local_planner
 )
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
@@ -166,7 +167,7 @@ add_executable(set_odom_pose_node src/set_odom_pose.cpp)
 
 add_executable(machine_state src/machine_state.cpp)
 target_link_libraries(machine_state ${catkin_LIBRARIES})
-add_dependencies(machine_state rosi_defy)
+# add_dependencies(machine_state rosi_defy)
 
 # Define compile flags
 set_target_properties(kinect_converter PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")

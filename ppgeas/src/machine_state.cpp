@@ -136,7 +136,7 @@ int main(int argc, char** argv){
         if (spawner3.call(c))
         {
             ROS_INFO("Limpando costmaps");
-            State++; //MUDEI de volta
+            State=4; //MUDEI de volta
             
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
@@ -241,7 +241,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -12.0;
-      goal.target_pose.pose.position.y = 2.2;
+      goal.target_pose.pose.position.y = 2.3;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -270,7 +270,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -19.0;
-      goal.target_pose.pose.position.y = 2.4;
+      goal.target_pose.pose.position.y = 2.7;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -299,7 +299,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -26.0;
-      goal.target_pose.pose.position.y = 2.8;
+      goal.target_pose.pose.position.y = 3.1;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;      
@@ -329,7 +329,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -33.0;
-      goal.target_pose.pose.position.y = 3.6;
+      goal.target_pose.pose.position.y = 3.5;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -358,7 +358,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -40.0;
-      goal.target_pose.pose.position.y = 4.0;
+      goal.target_pose.pose.position.y = 3.9;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -382,7 +382,7 @@ int main(int argc, char** argv){
     if (State == 11){ // Em frente à escada
       
      ROS_INFO("Estado 11 : Praticamente pronto pra subir a escada");
-     State=20;
+     State=30;
     }
 
     if (State == 12){

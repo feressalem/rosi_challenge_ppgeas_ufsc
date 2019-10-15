@@ -494,6 +494,7 @@
       <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
       <rosparam file="$(find ppgeas)/config/local_costmap_params.yaml" command="load" />
       <rosparam file="$(find ppgeas)/config/global_costmap_params.yaml" command="load" /> 
+      <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
       <!--param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" / -->
       <rosparam file="$(find ppgeas)/config/base_local_planner_params.yaml" command="load" />
       <rosparam file="$(find ppgeas)/config/move_base_params.yaml" command="load" />

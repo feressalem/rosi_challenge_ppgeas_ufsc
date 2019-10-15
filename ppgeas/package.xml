@@ -54,6 +54,7 @@
   <depend>dwa_local_planner</depend>
   <depend>map_server</depend>
   <depend>navigation</depend>
+  <depend>teb_local_planner</depend>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>move_base</build_depend>
   <build_depend>sensor_msgs</build_depend>
