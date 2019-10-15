@@ -408,8 +408,8 @@
       <param name="Reg/Force3DoF"             type="string" value="true"/>
       <param name="Optimizer/Slam2D" value="true" />
       <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->    
-      <!-- param name="use_action_for_goal" type="bool" value="true"/ -->
-      <!-- remap from="move_base"            to="/move_base"/ -->
+      <param name="use_action_for_goal" type="bool" value="true"/>
+      <remap from="move_base"            to="/move_base"/>
       <!-- remap from="grid_map" to="/map"/ -->
       
       <remap from="rgb/image"       to="$(arg rgb_topic_relay)"/>
