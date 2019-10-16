@@ -10,6 +10,7 @@
 #include <rtabmap_ros/ResetPose.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <ppgeas/DetectConveyorBelt.h>
 
 
 float array_arm_pos[2] = {};
@@ -40,15 +41,27 @@ int main(int argc, char** argv){
   ros::service::waitForService("/rtabmap/reset");
   ros::ServiceClient spawner2 = n.serviceClient<std_srvs::Empty>("/rtabmap/reset");
   ros::service::waitForService("/move_base/clear_costmaps");
-  ros::ServiceClient spawner3 = n.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");  
+  ros::ServiceClient spawner3 = n.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
 
   ros::Publisher initPosePub_ = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 2, true);
+
+  // ######################################################################################### Renan
+  ros::service::waitForService("detect_conveyorbelt");
+  ros::ServiceClient cb_detection = n.serviceClient<ppgeas::DetectConveyorBelt>("detect_conveyorbelt");
+  ppgeas::DetectConveyorBelt srv_detection;
+  // ######################################################################################### Renan
+
+  // ######################################################################################### Renan
+  ros::service::waitForService("planning");
+  ros::ServiceClient arm_center = n.serviceClient<ppgeas::Planning>("planning");
+  ppgeas::Planning srv_planning;
+  // ######################################################################################### Renan
 
   tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformListener tfListener(tfBuffer);
   geometry_msgs::TransformStamped transformStamped;
   geometry_msgs::PoseWithCovarianceStamped initPose_;
-  
+
   move_base_msgs::MoveBaseGoal goal;
   rtabmap_ros::ResetPose pose;
   std_srvs::Empty c;
@@ -111,65 +124,37 @@ int main(int argc, char** argv){
         if (spawner.call(pose))
         {
             ROS_INFO("Odometria resetada com sucesso");
-            
+
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
             return 1;
-        }  
+        }
         if (spawner2.call(c))
         {
             ROS_INFO("Mapa resetado com sucesso");
-            
+
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
             return 1;
-        } 
+        }
         if (spawner2.call(c))
         {
             ROS_INFO("Mudando estado");
             // State++; //MUDEI de volta
-            
+
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
             return 1;
-        } 
+        }
         if (spawner3.call(c))
         {
             ROS_INFO("Limpando costmaps");
             State=4; //MUDEI de volta
-            
+
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
             return 1;
-        } 
-    }      
-    if (State == 2){
-      ROS_INFO("Estado 2 : navegacao");
-
-      goal.target_pose.header.frame_id = "map";
-      goal.target_pose.header.stamp = ros::Time::now();
-
-      goal.target_pose.pose.position.x = -1.0;
-      goal.target_pose.pose.position.y = 2.0;
-      goal.target_pose.pose.position.z = 0.0;
-      goal.target_pose.pose.orientation.x = 0.0;
-      goal.target_pose.pose.orientation.y = 0.0;
-      goal.target_pose.pose.orientation.z = 1.0;
-      goal.target_pose.pose.orientation.w = 0.0;
-
-      ROS_INFO("Sending goal");
-      ac.sendGoal(goal);
-
-      ac.waitForResult();
-
-      if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-        ROS_INFO("Hooray, the base moved to first goal");
-        
-      }
-      else{
-        ROS_INFO("The base failed to move forward 1 meter for some reason");
-      }
-      State++;
+        }
     }
     if (State == 3){
       ROS_INFO("Estado 3 : navegacao 2");
@@ -199,14 +184,14 @@ int main(int argc, char** argv){
       }
     }
     if (State == 4){
-      
+
       ROS_INFO("Estado 4 : navegacao 3");
 
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -5.5;
-      goal.target_pose.pose.position.y = 1.9;
+      goal.target_pose.pose.position.y = 2.4; //1.9
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -228,13 +213,31 @@ int main(int argc, char** argv){
     }
 
     if (State == 5){ // Enfiar o Braço até o rolo
-      
-      ROS_INFO("Estado 5 : Tocar o rolo");
+      int cx;
+      int cy;
+      int windows_size_x = 640;
+      int windows_size_y = 320;
 
+      while(abs(srv_detection.response.cx - windows_size_x/2) < 5 && abs(srv_detection.response.cy - windows_size_x/2) < 5){
+        if (cb_detection.call(srv_detection)){
+          ROS_INFO("Centroide x = %f", srv_detection.response.cx);
+          ROS_INFO("Centroide y = %f", srv_detection.response.cy);
+          cx = srv_detection.response.cx;
+          cy = srv_detection.response.cy;
+          if(arm_center.call(srv_planning)){
+            juntas = srv_planning.response;
+          }
+        } else {
+            ROS_ERROR("Failed to call service cb_detection");
+            return 1;
+      }
+    }
+      ROS_INFO("Estado 5 : Tocar o rolo");
       State++;
     }
+
     if (State == 6){
-      
+
       ROS_INFO("Estado 6 : navegacao 5");
 
       goal.target_pose.header.frame_id = "map";
@@ -263,7 +266,7 @@ int main(int argc, char** argv){
     }
 
     if (State == 7){
-      
+
      ROS_INFO("Estado 7 : navegacao 6");
 
       goal.target_pose.header.frame_id = "map";
@@ -292,7 +295,7 @@ int main(int argc, char** argv){
 
     }
         if (State == 8){
-      
+
      ROS_INFO("Estado 8 : navegacao 6");
 
       goal.target_pose.header.frame_id = "map";
@@ -302,7 +305,7 @@ int main(int argc, char** argv){
       goal.target_pose.pose.position.y = 3.1;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
-      goal.target_pose.pose.orientation.y = 0.0;      
+      goal.target_pose.pose.orientation.y = 0.0;
       goal.target_pose.pose.orientation.z = 1.0;
       goal.target_pose.pose.orientation.w = 0.0;
 
@@ -322,7 +325,7 @@ int main(int argc, char** argv){
 
     }
     if (State == 9){
-      
+
      ROS_INFO("Estado 9 : navegacao 7");
 
       goal.target_pose.header.frame_id = "map";
@@ -351,7 +354,7 @@ int main(int argc, char** argv){
 
     }
     if (State == 10){
-      
+
      ROS_INFO("Estado 10 : navegacao 8");
 
       goal.target_pose.header.frame_id = "map";
@@ -380,13 +383,13 @@ int main(int argc, char** argv){
 
     }
     if (State == 11){ // Em frente à escada
-      
+
      ROS_INFO("Estado 11 : Praticamente pronto pra subir a escada");
      State=30;
     }
 
     if (State == 12){
-      
+
      ROS_INFO("Estado 9 : navegacao 7");
 
       goal.target_pose.header.frame_id = "map";
@@ -415,7 +418,7 @@ int main(int argc, char** argv){
 
     }
     if (State == 13){
-      
+
      ROS_INFO("Estado 9 : navegacao 7");
 
       goal.target_pose.header.frame_id = "map";
@@ -444,7 +447,7 @@ int main(int argc, char** argv){
 
     }
     if (State == 14){
-      
+
      ROS_INFO("Estado 9 : navegacao 7");
 
       goal.target_pose.header.frame_id = "map";
@@ -473,7 +476,7 @@ int main(int argc, char** argv){
 
     }
     if (State == 15){
-      
+
      ROS_INFO("Estado 9 : navegacao 7");
 
       goal.target_pose.header.frame_id = "map";

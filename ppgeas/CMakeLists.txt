@@ -80,13 +80,15 @@ add_message_files(
  add_service_files(
    FILES
    DetectFire.srv
+   DetectConveyorBelt.srv
+   Planning.srv
  )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
 #   FILES
 #   Action1.action
-#   Action2.action	
+#   Action2.action
 # )
 
 ## Generate added messages and services with any dependencies listed here
@@ -258,4 +260,3 @@ target_link_libraries(set_odom_pose_node
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
