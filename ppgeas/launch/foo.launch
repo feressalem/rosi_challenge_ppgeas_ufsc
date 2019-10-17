@@ -21,24 +21,89 @@
  	 <!-- Run the map server -->
  	 <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
-        
 
 
-	<arg name="model_rosi" default="$(find rosi_defy)/urdf/rosi.urdf" />
+
+	<!--<arg name="model_rosi" default="$(find rosi_defy)/urdf/rosi.urdf" />-->
 	<arg name="gui" default="false" />
 	<arg name="rvizconfig" default="$(find ppgeas)/config/navigation.rviz" />
 
-	<param name="robot_description" command="$(find xacro)/xacro $(arg model_rosi)" />
+	<!--<param name="robot_description" command="$(find xacro)/xacro $(arg model_rosi)" />-->
 	<param name="use_gui" value="$(arg gui)" />
 
-	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"  respawn="true"/>
+	<!--<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"  respawn="true"/>-->
 
 	<!-- node name="joint_state_publisher" pkg="ppgeas" type="joint_states.py" respawn="true"/ -->
 
-	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+	<!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
           <param name="ignore_timestamp" value="false" />
-        </node>
+        </node>-->
 	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+  <!-- Demo.launch attached -->
+  <!-- specify the planning pipeline -->
+  <arg name="pipeline" default="ompl" />
+
+  <!-- By default, we do not start a database (it can be large) -->
+  <arg name="db" default="false" />
+  <!-- Allow user to specify database location -->
+  <arg name="db_path" default="$(find rosi_moveit_config)/default_warehouse_mongo_db" />
+
+  <!-- By default, we are not in debug mode -->
+  <arg name="debug" default="false" />
+
+  <!--
+  By default, hide joint_state_publisher's GUI
+
+  MoveIt!'s "demo" mode replaces the real robot driver with the joint_state_publisher.
+  The latter one maintains and publishes the current joint configuration of the simulated robot.
+  It also provides a GUI to move the simulated robot around "manually".
+  This corresponds to moving around the real robot without the use of MoveIt.
+  -->
+  <arg name="use_gui" default="false" />
+
+  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+  <include file="$(find rosi_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include>
+
+  <!-- If needed, broadcast static tf for robot root -->
+    <!--<node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 map base_link" />-->
+
+
+  <!-- We do not have a robot connected, so publish fake joint states -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="$(arg use_gui)"/>
+    <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
+  </node>
+
+  <!-- Given the published joint states, publish tf for the robot links -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+  <!-- Run the main MoveIt! executable without trajectory execution (we do not have controllers configured by default) -->
+  <include file="$(find rosi_moveit_config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="fake_execution" value="true"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="pipeline" value="$(arg pipeline)"/>
+  </include>
+
+  <!-- Run Rviz and load the default config to see the state of the move_group node -->
+  <!--<include file="$(find rosi_moveit_config)/launch/moveit_rviz.launch">
+    <arg name="rviz_config" value="$(find rosi_moveit_config)/launch/moveit.rviz"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>-->
+
+  <!-- If database loading was enabled, start mongodb as well -->
+  <include file="$(find rosi_moveit_config)/launch/default_warehouse_db.launch" if="$(arg db)">
+    <arg name="moveit_warehouse_database_path" value="$(arg db_path)"/>
+  </include>
+  <!-- Demo.launch attached -->
+
+
+
+
 
         <!-- running the joystick node -->
 	<!--node name="joy_node" pkg="joy" type="joy_node" respawn="true" / -->

@@ -1,90 +1,84 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
+import roslib
+roslib.load_manifest('ppgeas')
 import sys
-import math
 import rospy
-import imutils
-import numpy as np
-import cv2, cv_bridge
+import cv2
+import numpy
+from std_msgs.msg import String
 from sensor_msgs.msg import Image
-#from geometry_msgs.msg import TwistStamped
-#from rosi_defy.msg import RosiMovement
-#from rosi_defy.msg import RosiMovementArray
-from ppgeas.srv import DetectConveyorBelt
-from ppgeas.srv import DetectConveyorBeltResponse
+from cv_bridge import CvBridge, CvBridgeError
+from ppgeas.srv import DetectConveyorBelt,DetectConveyorBeltResponse
+import imutils
 
-class CenterDetection():
-    def __init__(self):
-        self.cX = 0
-        self.cY = 0
-        self.image = None
-        cv2.namedWindow("window", 1)
-        self.bridge = cv_bridge.CvBridge()
-        self.sub_image = rospy.Subscriber('sensor/ur5toolCam', Image, self.callback_Image)
-        self.serv = rospy.Service('detect_conveyorbelt', DetectConveyorBelt, self.handle_detect_conveyorbelt)
-        #while not rospy.is_shutdown():
-        #    rospy.spin()
+kernel = numpy.ones((40,40), numpy.uint8)
+kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(40,40))
+#print(kernel2)
+#ctrX = 0;
+#ctrY = 0;
 
-    def handle_detect_conveyorbelt(self,request):
-        return DetectConveyorBeltResponse(cx = self.cX, cy = self.cY)
+class image_converter:
 
-    def detect(self, c):
-		# initialize the shape name and approximate the contour
-		shape = "unidentified"
-		peri = cv2.arcLength(c, True)
-		approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-		if len(approx) > 5:
-			shape = "circle"
-		return shape
+  def __init__(self):
+    self.image_pub = rospy.Publisher("/fire_test",Image, queue_size=1)
+    self.serv = rospy.Service('detect_conveyorbelt', DetectConveyorBelt, self.handle_detect_conveyorbelt)
+    self.bridge = CvBridge()
+    self.image_sub = rospy.Subscriber("/sensor/ur5toolCam",Image,self.callback)
+    self.ctrX = 0
+    self.ctrY = 0
+    #self.resp = DetectFireResponse()
 
-    def callback_Image(self,msg):
-        self.image = self.bridge.imgmsg_to_cv2(msg)
+  def callback(self,data):
+    try:
+      cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+    except CvBridgeError as e:
+      print(e)
 
-        #blur = cv2.medianBlur(self.image,5)
-        #gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
-        #thresh = cv2.threshold(gray, 230, 255, cv2.THRESH_TOZERO)[1]
-        gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        thresh = cv2.threshold(blurred, 230, 255, cv2.THRESH_BINARY)[1]
-        #gray2 = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
-        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
+    cv_image = cv2.flip(cv_image, +1)
+    rangomax = numpy.array([255, 255, 255]) # B, G, R
+    rangomin = numpy.array([250, 250, 250])
+    mask = cv2.inRange(cv_image, rangomin, rangomax)
+    # reduce the noise
+    close = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    erode = cv2.erode(close, kernel2, iterations=2)
+    #cv2.imshow("window", erode)
 
-        #circles = cv2.HoughCircles(thresh, cv2.HOUGH_GRADIENT, 1, 1,param1=50,param2=30,minRadius=0,maxRadius=0)
-        #circles = np.uint16(np.around(circles))
-        #for i in circles[0,:]:
-        #        # draw the outer circle
-        #        cv2.circle(self.image,(i[0],i[1]),i[2],(0,255,0),2)
-        #        # draw the center of the circle
-        #        cv2.circle(self.image,(i[0],i[1]),2,(0,0,255),3)
-        #cv2.imshow("window2", thresh)
+    x, y, w, h = cv2.boundingRect(erode)
+    if h > 5 and w > 5:
+      cv2.rectangle(cv_image, (x, y), (x+w, y + h), (0, 255, 0), 3)
+      cv2.circle(cv_image, (x+w/2, y+h/2), 5, (0, 0, 255), -1)
+      self.ctrX = x+w/2
+      self.ctrY = y+h/2
+    else:
+      self.ctrX = 0
+      self.ctrY = 0
+    try:
+      self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
+    except CvBridgeError as e:
+      print(e)
+    cv2.imshow("window2", cv_image)
+    cv2.waitKey(10)
 
-        # loop over the contours
-        for c in cnts:
-            M = cv2.moments(c)
-            if M["m00"] <> 0:
-                cx = int((M["m10"] / M["m00"]))
-                cy = int((M["m01"] / M["m00"]))
-                shape = self.detect(c)
-                area = cv2.contourArea(c)
-                if shape == "circle" and area > 1000:
-                    self.cX = cx
-                    self.cY = cy
-                    cv2.drawContours(self.image, [c], -1, (0, 255, 0), 2)
-                    cv2.circle(self.image, (self.cX, self.cY), 7, (255, 0, 0), -1)
-                    cv2.putText(self.image, shape, (self.cX, self.cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        cv2.imshow("window", cv2.flip(self.image, 1))
-        #cv2.imshow("window2", thresh)
-        #cv2.imshow("window3", cv2.flip(self.image, 1))
-        cv2.waitKey(10)
+  def handle_detect_conveyorbelt(self,request):
+    return DetectConveyorBeltResponse(ctdx = self.ctrX, ctdy = self.ctrY)
+
+  #def handle_detect_fire(self,req):
+    #if self.ctrX > 0 and self.ctrY > 0:
+    #  self.fireflag = 1
+    #else:
+    #  self.fireflag = 0
+    #return DetectFireResponse(self.fireflag, self.ctrX, self.ctrY)
 
 def main(args):
-    rospy.init_node('conveyorbelt_detection_server', anonymous=True)
-    try:
-        center_obj = CenterDetection()
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")
-    cv2.destroyAllWindows()
+  ic = image_converter()
+  rospy.init_node('fire_detection_server', anonymous=True)
+  try:
+    rospy.spin()
+  except KeyboardInterrupt:
+    print("Shutting down")
+  cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main(sys.argv)

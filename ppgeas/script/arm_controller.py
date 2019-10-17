@@ -21,8 +21,9 @@ from moveit_msgs.msg import RobotState, Constraints, OrientationConstraint
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from ppgeas.srv import Planning
 from ppgeas.srv import PlanningResponse
-from beginner_tutorials.srv import DetectConveyorBelt
-from beginner_tutorials.srv import DetectConveyorBeltResponse
+from ppgeas.srv import DetectConveyorBelt
+from ppgeas.srv import DetectConveyorBeltResponse
+from nav_msgs.msg import Odometry
 
 def all_close(goal, actual, tolerance):
   """
@@ -58,59 +59,59 @@ class MoveGroupPythonInteface(object):
             self.seq_points.append(list(msg.position))
 
     # Adiciona box de restricao para o planejamento nao atravessar o chao
-    def add_box(self, timeout=4):
-        scene = self.scene
-        box_pose = geometry_msgs.msg.PoseStamped()
-        box_pose.header.frame_id = "base_link"
-        box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.x = 0
-        box_pose.pose.position.y = 0
-        box_pose.pose.position.z = -.05
-        box_name = "box"
-        scene.add_box(box_name, box_pose, size=(2, 2, .01))
-        self.box_name=box_name
-        return self.wait_for_state_update(box_is_known=True, timeout=timeout)
+    #def add_box(self, timeout=4):
+    #    scene = self.scene
+    #    box_pose = geometry_msgs.msg.PoseStamped()
+    #    box_pose.header.frame_id = "base_link"
+    #    box_pose.pose.orientation.w = 1.0
+    #    box_pose.pose.position.x = 0
+    #    box_pose.pose.position.y = 0
+    #    box_pose.pose.position.z = -.05
+    #    box_name = "box"
+    #    scene.add_box(box_name, box_pose, size=(2, 2, .01))
+    #    self.box_name=box_name
+    #    return self.wait_for_state_update(box_is_known=True, timeout=timeout)
 
-    def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
-        box_name = self.box_name
-        scene = self.scene
-        start = rospy.get_time()
-        seconds = rospy.get_time()
-        while (seconds - start < timeout) and not rospy.is_shutdown():
-            attached_objects = scene.get_attached_objects([box_name])
-            is_attached = len(attached_objects.keys()) > 0
-            is_known = box_name in scene.get_known_object_names()
+    #def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
+    #    box_name = self.box_name
+    #    scene = self.scene
+    #    start = rospy.get_time()
+    #    seconds = rospy.get_time()
+    #    while (seconds - start < timeout) and not rospy.is_shutdown():
+    #        attached_objects = scene.get_attached_objects([box_name])
+    #        is_attached = len(attached_objects.keys()) > 0
+    #        is_known = box_name in scene.get_known_object_names()
 
-            if (box_is_attached == is_attached) and (box_is_known == is_known):
-                return True
+    #        if (box_is_attached == is_attached) and (box_is_known == is_known):
+    #            return True
 
-            rospy.sleep(0.1)
-            seconds = rospy.get_time()
-        return False
+    #        rospy.sleep(0.1)
+    #        seconds = rospy.get_time()
+    #    return False
 
     # Remove box de restricao para o planejamento ao final da execucao
-    def remove_box(self, timeout=4):
-        box_name = self.box_name
-        scene = self.scene
-        scene.remove_world_object(box_name)
+    #def remove_box(self, timeout=4):
+    #    box_name = self.box_name
+    #    scene = self.scene
+    #    scene.remove_world_object(box_name)
 
-        return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
+    #    return self.wait_for_state_update(box_is_attached=False, box_is_known=False, timeout=timeout)
 
-    def handle_planning(self,request):
-        arm.go_centro(request.cx,request.cy)
-        arm.executar()
-        return PlanningResponse(self.seq_points)
+    #def handle_planning(self,request):
+    #    arm.go_centro() #request.cx,request.cy
+    #    arm.executar()
+    #    return PlanningResponse(self.seq_points)
 
     # Metodo inicial
     def __init__(self):
         super(MoveGroupPythonInteface, self).__init__()
-        self.pontos=[]
-        self.juntas = []
+        #self.pontos=[]
+        #self.juntas = []
         self.seq_points = []
-        self.trajetoria = JointState()
+        #self.trajetoria = JointState()
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node('move_group_python_interface', anonymous=True)
-        self.serv = rospy.Service('planning', Planning, self.handle_planning)
+        #self.serv = rospy.Service('planning', Planning, self.handle_planning)
         robot = moveit_commander.RobotCommander()
         scene = moveit_commander.PlanningSceneInterface()
         group_name = "manipulator"
@@ -118,9 +119,11 @@ class MoveGroupPythonInteface(object):
         display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                    moveit_msgs.msg.DisplayTrajectory,
                                                    queue_size=20)
-        self.states = ManipulatorJoints()
+        #self.states = ManipulatorJoints()
         # Publisher das posicoes da trajetoria
         self.pub_manipulator = rospy.Publisher('/ur5/jointsPosTargetCommand', ManipulatorJoints, queue_size=1)
+        # Subscriber odom
+        self.sub_odom = rospy.Subscriber('/odom', Odometry, self.callback_Odom)
         # Subscriber dos estados das juntas
         self.sub_manipulatorStates = rospy.Subscriber('/ur5/jointsPositionCurrentState', ManipulatorJoints, self.callback_Mstates)
         # Subscriber dos estados das juntas planejado
@@ -136,6 +139,8 @@ class MoveGroupPythonInteface(object):
         #print "============ Available Planning Groups:", robot.get_group_names()
 
         # Misc variables
+        self.rpy = 0
+        self.yawOrientation = 0
         self.robot = robot
         self.scene = scene
         self.move_group = move_group
@@ -144,34 +149,55 @@ class MoveGroupPythonInteface(object):
         self.eef_link = eef_link
         self.group_names = group_names
 
+    def callback_Odom(self,msg):
+        #if msg.pose.pose.position.y > 0:
+        quaternion = (msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w)
+        self.rpy = euler_from_quaternion(quaternion)
+        #print(rpy[2])
+        if self.rpy[2] < 0:
+            self.yawOrientation = math.pi/2 + (-math.pi - self.rpy[2])
+        else:
+            self.yawOrientation = math.pi/2 + (math.pi - self.rpy[2])
+        #print("Yaw:",self.yawOrientation)
+        #print(self.robot.get_current_state())
+        #if msg.pose.pose.position.y < 0:
+        #    quaternion = (msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w)
+        #    rpy = euler_from_quaternion(quaternion)
+        #    if rpy[2] < 0:
+        #        self.yawOrientation = rpy[2] + 3*math.pi/2
+        #    else:
+        #        self.yawOrientation = rpy[2] - 3*math.pi/2
+
     # Metodo para enviar posicao desejada das juntas
-    def go_to_joint_state(self):
-        move_group = self.move_group
-        joint_goal = move_group.get_current_joint_values()
-        angulos = self.states.joint_variable
-        joint_goal[0] = 0.3 # = 0 (vrep)
-        joint_goal[1] = -math.pi/2 # = 0 (vrep)
-        joint_goal[2] = 0.5 # = 0 (vrep)
-        joint_goal[3] = -math.pi/2 # = 0 (vrep)
-        joint_goal[4] = 0
-        joint_goal[5] = 0
-        move_group.go(joint_goal, wait=True)
-        move_group.stop()
-        current_joints = move_group.get_current_joint_values()
-        current_pose = self.move_group.get_current_pose().pose
-        estados = self.robot.get_current_state()
-        self.juntas = estados.joint_state.position
-        print self.juntas
-        return all_close(joint_goal, current_joints, 0.01)
+    #def go_to_joint_state(self):
+    #    move_group = self.move_group
+    #    joint_goal = move_group.get_current_joint_values()
+    #    angulos = self.states.joint_variable
+    #    joint_goal[0] = 0.3 # = 0 (vrep)
+    #    joint_goal[1] = -math.pi/2 # = 0 (vrep)
+    #    joint_goal[2] = 0.5 # = 0 (vrep)
+    #    joint_goal[3] = -math.pi/2 # = 0 (vrep)
+    #    joint_goal[4] = 0
+    #    joint_goal[5] = 0
+    #    move_group.go(joint_goal, wait=True)
+    #    move_group.stop()
+    #    current_joints = move_group.get_current_joint_values()
+    #    current_pose = self.move_group.get_current_pose().pose
+    #    estados = self.robot.get_current_state()
+    #    self.juntas = estados.joint_state.position
+    #    print self.juntas
+    #    return all_close(joint_goal, current_joints, 0.01)
 
     # Metodo para enviar sequencia de pontos do planejamento para controle das juntas
     def executar(self):
+        #self.seq_points = list(tentativa)
+        #self.yaw_cotrol()
         for juntas in self.seq_points:
             self.pub_manipulator.publish(joint_variable=juntas)
             rospy.sleep(0.2)
 
-    # Metodo para enviar posicao no espaco desejada
-    def go_to_pose_goal(self):
+        # Metodo para enviar posicao no espaco desejada
+    def yaw_control(self):
         move_group = self.move_group
         #Posicao Inicial
         #pose_goal.orientation.x = -0.5004
@@ -181,56 +207,137 @@ class MoveGroupPythonInteface(object):
         #pose_goal.position.x = -0.10423
         #pose_goal.position.y = 0.22235
         #pose_goal.position.z = 1.1432
+        quaternion_robo = quaternion_from_euler(0.0, 0.0, self.yawOrientation)
         pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.x = -0.5004
-        pose_goal.orientation.y = 0.4992
-        pose_goal.orientation.z = 0.5
-        pose_goal.orientation.w = 0.5004
-        pose_goal.position.x = 0.0
+        pose_goal.orientation.x = -0.5004 #quaternion_robo[0]
+        pose_goal.orientation.y = 0.4992 #quaternion_robo[1]
+        pose_goal.orientation.z = 0.5 #quaternion_robo[2]
+        pose_goal.orientation.w = 0.5004 #quaternion_robo[3]
+        pose_goal.position.x = 0.3
         pose_goal.position.y = 0.22235
-        pose_goal.position.z = 1.0
+        pose_goal.position.z = 0.2
 
         move_group.set_pose_target(pose_goal)
         plan = move_group.go(wait=True)
         move_group.stop()
         move_group.clear_pose_targets()
         current_pose = self.move_group.get_current_pose().pose
-        estados = self.robot.get_current_state()
-        estado_inicial = self.states.joint_variable
-        estado_final = estados.joint_state.position[5:11]
+        self.executar()
+        #estados = self.robot.get_current_state()
+        #estado_inicial = self.states.joint_variable
+        #estado_final = estados.joint_state.position[5:11]
         return all_close(pose_goal, current_pose, 0.01)
 
-    def go_centro(self,cy,cz):
-        window_size_y = 320
-        window_size_z = 640
-        limit = 5
-        #while (abs(cy - window_size_y) < limit) and (abs(cz - window_size_z) < limit):
-        move_group = self.move_group
-        current_pose = self.move_group.get_current_pose().pose
-        pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.x = -0.5004
-        pose_goal.orientation.y = 0.4992
-        pose_goal.orientation.z = 0.5
-        pose_goal.orientation.w = 0.5004
-        pose_goal.position.x = 0.0
-        pose_goal.position.y = self.move_group.get_current_pose().pose.position.y + (cy - window_size_y/2)/100
-        pose_goal.position.z = self.move_group.get_current_pose().pose.position.z + (cz - window_size_z/2)/100
+    # Metodo para enviar posicao no espaco desejada
+    #def go_to_pose_goal(self):
+    #    move_group = self.move_group
+    #    #Posicao Inicial
+    #    #pose_goal.orientation.x = -0.5004
+    #    #pose_goal.orientation.y = 0.4992
+    #    #pose_goal.orientation.z = 0.5
+    #    #pose_goal.orientation.w = 0.5004
+    #    #pose_goal.position.x = -0.10423
+    #    #pose_goal.position.y = 0.22235
+    #    #pose_goal.position.z = 1.1432
+    #    pose_goal = geometry_msgs.msg.Pose()
+    #    pose_goal.orientation.x = -0.5004
+    #    pose_goal.orientation.y = 0.4992
+    #    pose_goal.orientation.z = 0.5
+    #    pose_goal.orientation.w = 0.5004
+    #    pose_goal.position.x = 0.1
+    #    pose_goal.position.y = 0.3
+    #    pose_goal.position.z = 0.8
 
-        move_group.set_pose_target(pose_goal)
-        plan = move_group.go(wait=True)
-        move_group.stop()
-        move_group.clear_pose_targets()
+    #    move_group.set_pose_target(pose_goal)
+    #    plan = move_group.go(wait=True)
+    #    move_group.stop()
+    #    move_group.clear_pose_targets()
+    #    current_pose = self.move_group.get_current_pose().pose
+    #    estados = self.robot.get_current_state()
+    #    estado_inicial = self.states.joint_variable
+    #    estado_final = estados.joint_state.position[5:11]
+    #    return all_close(pose_goal, current_pose, 0.01)
 
-        return all_close(pose_goal, current_pose, 0.01)
+    def center_detection(self):
+        rospy.wait_for_service('detect_conveyorbelt')
+        try:
+            cb_detection = rospy.ServiceProxy('detect_conveyorbelt', DetectConveyorBelt)
+            response = cb_detection()
+            return response
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+
+    #def go_centro(self): #,cy,cz
+    #    window_size_y = 640
+    #    window_size_z = 480
+    #    limit = 5
+    #    response = self.center_detection()
+    #    cy = response.ctdx
+    #    cz = response.ctdy
+    #    i = 0
+    #    while (abs(cz - window_size_z/2) > limit):
+    #        print(i)
+    #        print(abs(cy - window_size_y))
+    #        print(abs(cz - window_size_z))
+    #        move_group = self.move_group
+    #        current_pose = self.move_group.get_current_pose().pose
+    #        pose_goal = geometry_msgs.msg.Pose()
+    #        pose_goal.orientation.x = -0.5004
+    #        pose_goal.orientation.y = 0.4992
+    #        pose_goal.orientation.z = 0.5
+    #        pose_goal.orientation.w = 0.5004
+    #        pose_goal.position.x = self.move_group.get_current_pose().pose.position.x
+    #        pose_goal.position.y = self.move_group.get_current_pose().pose.position.y
+    #        pose_goal.position.z = self.move_group.get_current_pose().pose.position.z - 0.1 #(cz - window_size_z/2)/1000
+
+    #        move_group.set_pose_target(pose_goal)
+    #        plan = move_group.go(wait=True)
+    #        move_group.stop()
+    #        move_group.clear_pose_targets()
+    #        self.executar()
+    #        rospy.sleep(0.5)
+    #        response = self.center_detection()
+    #        cy = response.ctdx
+    #        cz = response.ctdy
+    #        i = i + 1
+    #    return all_close(pose_goal, current_pose, 0.01)
+
+    #    #i = 0
+
+        #while(abs(cy - window_size_y/2) > limit):
+        #    print(i)
+        #    print(abs(cy - window_size_y))
+        #    print(abs(cz - window_size_z))
+        #    move_group = self.move_group
+        #    current_pose = self.move_group.get_current_pose().pose
+        #    pose_goal = geometry_msgs.msg.Pose()
+        #    pose_goal.orientation.x = -0.5004
+        #    pose_goal.orientation.y = 0.4992
+        #    pose_goal.orientation.z = 0.5
+        #    pose_goal.orientation.w = 0.5004
+        #    pose_goal.position.x = self.move_group.get_current_pose().pose.position.x
+        #    pose_goal.position.y = self.move_group.get_current_pose().pose.position.y - (cy - window_size_y/2)/1000
+        #    pose_goal.position.z = self.move_group.get_current_pose().pose.position.z
+
+        #    move_group.set_pose_target(pose_goal)
+        #    plan = move_group.go(wait=True)
+        #    move_group.stop()
+        #    move_group.clear_pose_targets()
+        #    response = self.center_detection()
+        #    cy = response.cx
+        #    cz = response.cy
+        #    self.executar()
+        #    i = i + 1
+        #    return all_close(pose_goal, current_pose, 0.01)
 
     # Metodo para planejamento de pontos no plano cartesiano
-    def plan_cartesian_path(self, scale=1):
-        move_group = self.move_group
-        waypoints = []
-        wpose = move_group.get_current_pose().pose
-        wpose.position.x -= scale * 0.1
+    #def plan_cartesian_path(self, scale=1):
+    #    move_group = self.move_group
+    #    waypoints = []
+    #    wpose = move_group.get_current_pose().pose
+    #    wpose.position.z -= scale * 0.1
         #wpose.position.y += scale * 0.2
-        waypoints.append(copy.deepcopy(wpose))
+    #    waypoints.append(copy.deepcopy(wpose))
 
         #wpose.position.x += scale * 0.1
         #wpose.position.z -= scale * 0.1
@@ -240,10 +347,10 @@ class MoveGroupPythonInteface(object):
         #wpose.position.z -= scale * 0.1
         #waypoints.append(copy.deepcopy(wpose))
 
-        (plan, fraction) = move_group.compute_cartesian_path(
-                                           waypoints,   # waypoints to follow
-                                           0.01,        # eef_step
-                                           0.0)         # jump_threshold
+    #    (plan, fraction) = move_group.compute_cartesian_path(
+    #                                       waypoints,   # waypoints to follow
+    #                                       0.01,        # eef_step
+    #                                       0.0)         # jump_threshold
 
         #self.plan = plan
         #print(plan) #plan.joint_trajectory.points
@@ -251,7 +358,7 @@ class MoveGroupPythonInteface(object):
         #print(plan.joint_trajectory.points[1].positions)
         #print(plan.joint_trajectory.points[2].positions)
         #print(fraction)
-        return plan, fraction
+        #return plan, fraction
 
     # Metodo para enviar o planejamento para o rviz
     def display_trajectory(self, plan):
@@ -265,19 +372,31 @@ class MoveGroupPythonInteface(object):
         display_trajectory_publisher.publish(display_trajectory);
 
     # Metodo para executar o planejamento no gazebo
-    def execute_plan(self, plan):
-        move_group = self.move_group
-        move_group.execute(plan, wait=True)
+    #def execute_plan(self, plan):
+    #    move_group = self.move_group
+    #    move_group.execute(plan, wait=True)
 
 def main():
     try:
         arm = MoveGroupPythonInteface()
-        print("============ Press `Enter`...")
-        raw_input()
-        arm.go_to_pose_goal()
-        print("============ Press `Enter`...")
-        raw_input()
-        arm.executar()
+        arm.yaw_control()
+        #arm.go_to_pose_goal()
+        #rospy.spin()
+        #print("============ Press `Enter`...")
+        #raw_input()
+        #arm.add_box()
+        #print("============ Press `Enter`...")
+        #raw_input()
+        #cartesian_plan, fraction = arm.plan_cartesian_path()
+        #for juntas in cartesian_plan.joint_trajectory.points:
+        #    print(juntas.positions)
+        #    arm.executar(list(juntas.positions))
+        #    rospy.sleep(0.1)
+        #arm.go_to_pose_goal()
+        #arm.go_centro()
+        #print("Terminou execucao")
+        #raw_input()
+        #arm.executar()
     except rospy.ROSInterruptException:
       return
     except KeyboardInterrupt:

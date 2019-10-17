@@ -11,7 +11,7 @@
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <ppgeas/DetectConveyorBelt.h>
-
+#include <ppgeas/Planning.h>
 
 float array_arm_pos[2] = {};
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -52,9 +52,9 @@ int main(int argc, char** argv){
   // ######################################################################################### Renan
 
   // ######################################################################################### Renan
-  //ros::service::waitForService("planning");
-  //ros::ServiceClient arm_center = n.serviceClient<ppgeas::Planning>("planning");
-  //ppgeas::Planning srv_planning;
+  ros::service::waitForService("planning");
+  ros::ServiceClient arm_center = n.serviceClient<ppgeas::Planning>("planning");
+  ppgeas::Planning srv_planning;
   // ######################################################################################### Renan
 
   tf2_ros::Buffer tfBuffer;
@@ -212,8 +212,27 @@ int main(int argc, char** argv){
       }
     }
 
-    if (State == 5){ // Enfiar o Braço até o rolo
+    if (State == 5){
       ROS_INFO("Estado 5 : Tocar o rolo");
+      int cx;
+      int cy;
+      int windows_size_x = 640;
+      int windows_size_y = 320;
+      //while(abs(srv_detection.response.cx - windows_size_x/2) < 5 && abs(srv_detection.response.cy - window_size_y/2) < 5){
+      //  if(cb_detection.call(srv_detection)){
+      //    ROS_INFO("Centroide x = %f", srv_detection.response.cx);
+      //    ROS_INFO("Centroide x = %f", srv_detection.response.cy);
+      //    cx = srv_detection.response.cx;
+      //    cy = srv_detection.response.cy;
+      //  } else{
+      //    ROS_ERROR("Failed to call service cb_detection")
+      //  }
+      //  if(arm_center.call(srv_planning)){
+      //    //juntas = srv_planning.response;
+      //  }else{
+      //    ROS_ERROR("Failed to call service arm_center")
+      //  }
+      //}
       State++;
     }
 
