@@ -3,6 +3,7 @@
 #include <pcl_ros/transforms.h>
 #include <pcl/point_types.h>
 #include <tf2_ros/transform_listener.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
@@ -16,6 +17,7 @@ void callback(const PointCloud::ConstPtr& pcl_in)
 
   //pcl_ros::transformPointCloud("base_link", *pcl_in, pcl_out, *tf_listener);
   pcl_ros::transformPointCloud("velodyne_new", *pcl_in, pcl_out, *tf_listener);
+  pcl_conversions::toPCL(ros::Time::now(), pcl_out.header.stamp);
   tf_pub.publish(pcl_out);
 }
 

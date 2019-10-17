@@ -149,7 +149,7 @@ int main(int argc, char** argv){
         if (spawner3.call(c))
         {
             ROS_INFO("Limpando costmaps");
-            State=4; //MUDEI de volta
+            State=30; //MUDEI de volta
 
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");

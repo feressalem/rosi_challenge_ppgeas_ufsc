@@ -7,6 +7,7 @@
 	<!-- Publish static transforms -->
 	<node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" />
 	<!-- node name="bl_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link imu" / -->
+  <node name="bl_velodyne_straight" pkg="tf2_ros" type="static_transform_publisher" args="0.242 0.002 0.1655 0 0 0 1 base_link velodyne_new" />
 
         <!-- node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 -0.0871557 0 0.9961947 base_link camera_link" / -->
         <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.009 0 0 0 1 base_link camera_link" />
@@ -139,10 +140,10 @@
 	<node name="odometry_node" pkg="ppgeas" type="odometry_node" respawn="true"/>
 
 	<!-- transfer velodyne pointoclouds to velodyne_new frame_id -->
-        <!-- node name="pcl_tf" pkg="ppgeas" type="pcl_tf" / -->
+  <node name="pcl_tf" pkg="ppgeas" type="pcl_tf" />
 
 	<!-- convert transferred velodyne pointoclouds to 2d laserscan -->
-        <!-- node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
 
         <remap from="cloud_in" to="/sensor/velodyne_new"/>
         <remap from="scan" to="/sensor/velodyne_scan"/>
@@ -169,7 +170,7 @@
             concurrency_level: 1
         </rosparam>
 
-	</node -->
+	</node>
 
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
       <param name="base_global_planner" value="global_planner/GlobalPlanner" />
