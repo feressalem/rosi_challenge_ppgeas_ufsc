@@ -1,0 +1,120 @@
+<launch>
+        <param name="use_sim_time" type="bool" value="true" />
+        <!-- running the CLOCK node -->
+	<node name="clock_node" pkg="ppgeas" type="clock_node" respawn="true" />
+
+
+	<!-- Publish static transforms -->
+	<node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" />
+	<!-- node name="bl_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link imu" / -->
+
+        <!-- node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 -0.0871557 0 0.9961947 base_link camera_link" / -->
+        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.009 0 0 0 1 base_link camera_link" />
+	<!-- OBS: kinect position and orientation tuned empirically -->
+	<!-- Load reasonable defaults for the relative pose between cameras -->
+  	<include file="$(find rgbd_launch)/launch/kinect_frames.launch">
+ 	   <arg name="camera" value="camera" />
+	</include>
+
+
+ 	 <arg name="map_file" default="$(find ppgeas)/config/mymap.yaml" />
+ 	 <!-- Run the map server -->
+ 	 <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+        
+
+
+	<arg name="model_rosi" default="$(find rosi_defy)/urdf/rosi.urdf" />
+	<arg name="gui" default="false" />
+	<arg name="rvizconfig" default="$(find ppgeas)/config/navigation.rviz" />
+
+	<param name="robot_description" command="$(find xacro)/xacro $(arg model_rosi)" />
+	<param name="use_gui" value="$(arg gui)" />
+
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"  respawn="true"/>
+
+	<!-- node name="joint_state_publisher" pkg="ppgeas" type="joint_states.py" respawn="true"/ -->
+
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+          <param name="ignore_timestamp" value="false" />
+        </node>
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+        <!-- running the joystick node -->
+	<!--node name="joy_node" pkg="joy" type="joy_node" respawn="true" / -->
+
+	<!-- running the rosi joystick example node -->
+	<!--node name="rosi_joy" pkg="ppgeas" type="rosi_joy.py" respawn="true"/ -->
+
+	<!-- load simulation config params -->
+	<!-- rosparam command="load" file="$(find rosi_defy)/config/simulation_parameters.yaml"/ -->
+
+	<!-- running the rosi arms controller node -->
+	<node name="control_arm_speed" pkg="ppgeas" type="control_arm_speed.py" respawn="true"/>
+
+	<!-- running the kinect angle controller node -->
+	<node name="kinect_angle_controller" pkg="ppgeas" type="set_kinect_angle_node.py" respawn="true"/>
+
+	<!-- running the rosi base controller node -->
+	<node name="base_controller_node" pkg="ppgeas" type="base_controller.py" respawn="true"/>
+
+	<!-- running the state machine node -->
+	<!--<node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/>-->
+
+	<!-- running the conveyor belt detection node -->
+	<!-- node name="belt_detec" pkg="ppgeas" type="conveyorbelt_detection.py" respawn="true"/ -->
+
+	<!-- running the fire detection node -->
+	<!-- node name="fire_detec" pkg="ppgeas" type="fire_detection.py" respawn="true"/ -->
+
+	<!-- reset odometry to static_rosiInitialPose -->
+	<!--node name="set_odom_pose_node" pkg="ppgeas" type="set_odom_pose_node" respawn="false"/ -->
+
+	<!-- ODOMETRY NODE-->
+	<node name="odometry_node" pkg="ppgeas" type="odometry_node" respawn="true"/>
+
+	<!-- transfer velodyne pointoclouds to velodyne_new frame_id -->
+        <!-- node name="pcl_tf" pkg="ppgeas" type="pcl_tf" / -->
+
+	<!-- convert transferred velodyne pointoclouds to 2d laserscan -->
+        <!-- node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+
+        <remap from="cloud_in" to="/sensor/velodyne_new"/>
+        <remap from="scan" to="/sensor/velodyne_scan"/>
+        <rosparam>
+            transform_tolerance: 0.01
+           # min_height: 0.2
+           # max_height: 0.4
+            min_height: -0.15
+            max_height: 0.1
+
+            angle_min: -1.5708 #-0.7854 # -M_PI/2
+            angle_max: 1.5708 # M_PI/2
+            angle_increment: 0.0087 # M_PI/360.0
+            scan_time: 0.2
+            range_min: 0.9
+            range_max: 5.0
+            use_inf: true
+            inf_epsilon: 1.0
+
+            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
+            # 0 : Detect number of cores
+            # 1 : Single threaded
+            # 2->inf : Parallelism level
+            concurrency_level: 1
+        </rosparam>
+
+	</node -->
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+      <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+      <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+      <rosparam file="$(find ppgeas)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+      <rosparam file="$(find ppgeas)/config/local_costmap_params.yaml" command="load" />
+      <rosparam file="$(find ppgeas)/config/global_costmap_params.yaml" command="load" />
+      <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+      <!--param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" / -->
+      <rosparam file="$(find ppgeas)/config/base_local_planner_params.yaml" command="load" />
+      <rosparam file="$(find ppgeas)/config/move_base_params.yaml" command="load" />
+    </node>
+</launch>

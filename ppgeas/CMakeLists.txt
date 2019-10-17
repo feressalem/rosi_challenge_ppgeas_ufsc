@@ -169,10 +169,14 @@ add_executable(set_odom_pose_node src/set_odom_pose.cpp)
 
 add_executable(machine_state src/machine_state.cpp)
 target_link_libraries(machine_state ${catkin_LIBRARIES})
+add_dependencies(machine_state ppgeas_gencpp)
 
 add_executable(odometry_node src/odometry.cpp)
 target_link_libraries(odometry_node ${catkin_LIBRARIES})
-add_dependencies(machine_state ppgeas_gencpp)
+
+add_executable(clock_node src/clock.cpp)
+target_link_libraries(clock_node ${catkin_LIBRARIES})
+
 
 # Define compile flags
 set_target_properties(kinect_converter PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
