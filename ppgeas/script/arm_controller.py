@@ -51,12 +51,12 @@ class MoveGroupPythonInteface(object):
 
     # Retorna os estados do manipulador segundo topico do vrep
     def callback_Mstates(self, msg):
-            self.states = msg
+        self.states = msg
 
     # Retorna as posicoes do manipulador geradas pelo planejamento
     def callback_Jstates(self, msg):
-            # pega o item posicao da mensagem e transforma em lista e joga na variavel para publicar
-            self.seq_points.append(list(msg.position))
+        # pega o item posicao da mensagem e transforma em lista e joga na variavel para publicar
+        self.seq_points.append(list(msg.position))
 
     # Adiciona box de restricao para o planejamento nao atravessar o chao
     #def add_box(self, timeout=4):
@@ -119,7 +119,7 @@ class MoveGroupPythonInteface(object):
         display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                    moveit_msgs.msg.DisplayTrajectory,
                                                    queue_size=20)
-        #self.states = ManipulatorJoints()
+        self.states = ManipulatorJoints()
         # Publisher das posicoes da trajetoria
         self.pub_manipulator = rospy.Publisher('/ur5/jointsPosTargetCommand', ManipulatorJoints, queue_size=1)
         # Subscriber odom
@@ -192,6 +192,7 @@ class MoveGroupPythonInteface(object):
     def executar(self):
         #self.seq_points = list(tentativa)
         #self.yaw_cotrol()
+        print(self.seq_points)
         for juntas in self.seq_points:
             self.pub_manipulator.publish(joint_variable=juntas)
             rospy.sleep(0.2)
@@ -214,17 +215,16 @@ class MoveGroupPythonInteface(object):
         pose_goal.orientation.z = 0.5 #quaternion_robo[2]
         pose_goal.orientation.w = 0.5004 #quaternion_robo[3]
         pose_goal.position.x = 0.3
-        pose_goal.position.y = 0.22235
-        pose_goal.position.z = 0.2
+        pose_goal.position.y = 0.4
+        pose_goal.position.z = 0.8
 
         move_group.set_pose_target(pose_goal)
         plan = move_group.go(wait=True)
         move_group.stop()
         move_group.clear_pose_targets()
         current_pose = self.move_group.get_current_pose().pose
-        self.executar()
         #estados = self.robot.get_current_state()
-        #estado_inicial = self.states.joint_variable
+        estado_inicial = self.states.joint_variable
         #estado_final = estados.joint_state.position[5:11]
         return all_close(pose_goal, current_pose, 0.01)
 
@@ -380,10 +380,11 @@ def main():
     try:
         arm = MoveGroupPythonInteface()
         arm.yaw_control()
+        rospy.sleep(5)
+        arm.executar()
         #arm.go_to_pose_goal()
         #rospy.spin()
-        #print("============ Press `Enter`...")
-        #raw_input()
+
         #arm.add_box()
         #print("============ Press `Enter`...")
         #raw_input()
