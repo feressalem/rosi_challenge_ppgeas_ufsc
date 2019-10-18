@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+#
+## Codigo comentado
+#
+
 import rospy
 import numpy as np
 from rosi_defy.msg import RosiMovement
@@ -75,12 +79,12 @@ class RosiNodeClass():
 			# mounting the lists
 			for i in range(4):
 
-				# ----- treating the arms commands		
+				# ----- treating the arms commands
 				arm_command = RosiMovement()
-		
+
 				# mounting arm command list
 				arm_command.nodeID = i+1
-				
+
 				# separates each arm side command
 				if i == 0:
 					arm_command.joint_var = self.arm_front_right_rotSpeed
@@ -95,7 +99,7 @@ class RosiNodeClass():
 				arm_command_list.movement_array.append(arm_command)
 
 			# publishing
-			self.pub_arm.publish(arm_command_list)		
+			self.pub_arm.publish(arm_command_list)
 
 			# sleeps for a while
 			node_sleep_rate.sleep()
@@ -112,7 +116,7 @@ class RosiNodeClass():
 
 		# saving_arms_setpoints
 		self.arm_front_setPoint = msg.front_arms_sp
-		self.arm_rear_setPoint = msg.rear_arms_sp 
+		self.arm_rear_setPoint = msg.rear_arms_sp
 
 	def callback_Arm_position(self, msg):
 
@@ -120,7 +124,7 @@ class RosiNodeClass():
 		self.arm_front_right_position = msg.movement_array[0].joint_var
 		self.arm_front_left_position = msg.movement_array[2].joint_var
 		self.arm_rear_right_position = msg.movement_array[1].joint_var
-		self.arm_rear_left_position = msg.movement_array[3].joint_var	
+		self.arm_rear_left_position = msg.movement_array[3].joint_var
 
 
 # instaciate the node
@@ -133,4 +137,3 @@ if __name__ == '__main__':
 	try:
 		node_obj = RosiNodeClass()
 	except rospy.ROSInterruptException: pass
-

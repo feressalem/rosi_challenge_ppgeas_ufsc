@@ -1,52 +1,54 @@
 #!/usr/bin/env python
+#
+## Codigo comentado
+#
+
 import rospy
 import numpy as np
 from std_msgs.msg import Float32
 
 class SetKinectAngle():
 
-	# class constructor
+	# Construturo de classe
 	def __init__(self):
-		# sends a message to the user
+		# Envia uma mensagem ao usuario
 		rospy.loginfo('Set_kinect_angle node started')
 
-		# registering to publishers
+		# Registra o publisher para a movimentacao do Kinect
 		self.pub_angle = rospy.Publisher('rosi/command_kinect_joint', Float32, queue_size=1)
 
-		# registering to subscribers
+		# Registra o Subscriber para o angulo do Kinect
 		self.sub_angle = rospy.Subscriber('/rosi/kinect_joint', Float32, self.callback_Angle)
 
-		# defining the eternal loop frequency
+		# Define a frequencia de execucao do no
 		node_sleep_rate = rospy.Rate(10)
 
-		# eternal loop (until second order)
+		# Loop
 		while not rospy.is_shutdown():
-
 			#angle_command = Float32()
 			#angle_command = -0.174533
-
-			#self.pub_angle.publish(angle_command)		
-			
+			#self.pub_angle.publish(angle_command)
 			# sleeps for a while
 			node_sleep_rate.sleep()
-	
-	# angle callback function
+
+	# metodo de callback para o angulo do kinect
 	def callback_Angle(self, msg):
+		# Get o angulo
 		angle = msg.data
+		# Define a variavel de comando
 		angle_command = Float32()
+		# Calcula a variacao
 		delta_angle = - 0.174533 - angle
 		if abs(delta_angle) >= 0.01 :
 			angle_command = -0.174533
+			# Publica o comando para o kinect
 			self.pub_angle.publish(angle_command)
 
-		
+
 if __name__ == '__main__':
-
-	# initialize the node
+	# Inicializa o no
 	rospy.init_node('set_kinect_angle_node', anonymous=True)
-
-	# instantiate the class
+	# instancia a classe
 	try:
 		node_obj = SetKinectAngle()
 	except rospy.ROSInterruptException: pass
-

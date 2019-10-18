@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+#
+## Codigo comentado
+#
+
 import rospy
 import numpy as np
 from rosi_defy.msg import RosiMovement
@@ -69,12 +73,12 @@ class RosiNodeClass():
 				# appending the command to the list
 				traction_command_list.movement_array.append(traction_command)
 
-				# ----- treating the arms commands		
+				# ----- treating the arms commands
 				arm_command = RosiMovement()
-		
+
 				# mounting arm command list
 				arm_command.nodeID = i+1
-				
+
 				# separates each arm side command
 				if i == 0 or i == 2:
 					arm_command.joint_var = self.arm_front_rotSpeed
@@ -85,7 +89,7 @@ class RosiNodeClass():
 				arm_command_list.movement_array.append(arm_command)
 
 			# publishing
-			self.pub_arm.publish(arm_command_list)		
+			self.pub_arm.publish(arm_command_list)
 			self.pub_traction.publish(traction_command_list)
 
 			# sleeps for a while
@@ -166,14 +170,14 @@ class RosiNodeClass():
 			self.arm_rear_rotSpeed = -1 * self.max_arms_rotational_speed * trigger_left
 		else:
 			self.arm_rear_rotSpeed = self.max_arms_rotational_speed * trigger_left
-			
+
 	# ---- Support Methods --------
 
 	# -- Method for compute the skid-steer A kinematic matrix
 	@staticmethod
 	def compute_kinematicAMatrix(var_lambda, wheel_radius, ycir):
 
-		# kinematic A matrix 
+		# kinematic A matrix
 		matrix_A = np.array([[var_lambda*wheel_radius/2, var_lambda*wheel_radius/2],
 							[(var_lambda*wheel_radius)/(2*ycir), -(var_lambda*wheel_radius)/(2*ycir)]])
 
@@ -189,4 +193,3 @@ if __name__ == '__main__':
 	try:
 		node_obj = RosiNodeClass()
 	except rospy.ROSInterruptException: pass
-

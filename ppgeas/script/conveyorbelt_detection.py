@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+#
+## Codigo comentado
+#
+
 from __future__ import print_function
 
 import roslib
@@ -22,7 +26,7 @@ kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(40,40))
 class image_converter:
 
   def __init__(self):
-    self.image_pub = rospy.Publisher("/fire_test",Image, queue_size=1)
+    self.image_pub = rospy.Publisher("/conveyorbelt_test",Image, queue_size=1)
     self.serv = rospy.Service('detect_conveyorbelt', DetectConveyorBelt, self.handle_detect_conveyorbelt)
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("/sensor/ur5toolCam",Image,self.callback)
@@ -35,16 +39,18 @@ class image_converter:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
       print(e)
-
+    # Espelha a imagem
     cv_image = cv2.flip(cv_image, +1)
+    # Define a faixa para o filtro BGR
     rangomax = numpy.array([255, 255, 255]) # B, G, R
     rangomin = numpy.array([250, 250, 250])
+    # Mascara com a faixa especificada
     mask = cv2.inRange(cv_image, rangomin, rangomax)
-    # reduce the noise
+    # Reduz o ruido ao aplicar transformacoes morfologicas
     close = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    # Erode uma imagem usando um elemento estruturador
     erode = cv2.erode(close, kernel2, iterations=2)
-    #cv2.imshow("window", erode)
-
+    # Define a regiao de contorno e desenha o perimero e o centroide na imagem
     x, y, w, h = cv2.boundingRect(erode)
     if h > 5 and w > 5:
       cv2.rectangle(cv_image, (x, y), (x+w, y + h), (0, 255, 0), 3)
@@ -58,22 +64,18 @@ class image_converter:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
     except CvBridgeError as e:
       print(e)
-    cv2.imshow("window2", cv_image)
-    cv2.waitKey(10)
+    # Apresenta o resultado em uma janela separada
+    #cv2.imshow("window2", cv_image)
+    #cv2.waitKey(10)
 
+  # Metodo para lidar com a requisicao de servico e o retorno da resposta
   def handle_detect_conveyorbelt(self,request):
     return DetectConveyorBeltResponse(ctdx = self.ctrX, ctdy = self.ctrY)
 
-  #def handle_detect_fire(self,req):
-    #if self.ctrX > 0 and self.ctrY > 0:
-    #  self.fireflag = 1
-    #else:
-    #  self.fireflag = 0
-    #return DetectFireResponse(self.fireflag, self.ctrX, self.ctrY)
-
 def main(args):
   ic = image_converter()
-  rospy.init_node('fire_detection_server', anonymous=True)
+  # Inicializacao do no
+  rospy.init_node('conveyorbelt_detection_server', anonymous=True)
   try:
     rospy.spin()
   except KeyboardInterrupt:
