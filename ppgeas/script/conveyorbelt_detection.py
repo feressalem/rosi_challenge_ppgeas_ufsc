@@ -136,9 +136,9 @@ class image_converter:
     #except CvBridgeError as e:
     #  print(e)
     # Apresenta o resultado em uma janela separada
-    cv2.imshow("window", unknown)
+    #cv2.imshow("window", unknown)
     cv2.imshow("window2", cv_image)
-    cv2.imshow("window3", edges)
+    #cv2.imshow("window3", edges)
     cv2.waitKey(10)
 
   # Metodo para lidar com a requisicao de servico e o retorno da resposta
