@@ -24,9 +24,10 @@ class RosiNodeClass():
 		self.arm_front_left_rotSpeed = 0
 		self.arm_rear_right_rotSpeed = 0
 		self.arm_rear_left_rotSpeed = 0
-		self.arm_direction = 0
-		self.arm_front_setPoint = 2.7
-		self.arm_rear_setPoint = 0.5
+		self.arm_front_direction = 0
+		self.arm_rear_direction = 0
+		self.arm_front_setPoint = 0
+		self.arm_rear_setPoint = 0
 		self.arm_front_right_position = 0
 		self.arm_front_left_position = 0
 		self.arm_rear_right_position = 0
@@ -47,7 +48,7 @@ class RosiNodeClass():
 
 		# eternal loop (until second order)
 		while not rospy.is_shutdown():
-			if self.arm_direction == 0:
+			if self.arm_front_direction == 0:
 				if (abs(self.arm_front_setPoint-self.arm_front_right_position)<0.06):
 					self.arm_front_right_rotSpeed = 0
 				elif(self.arm_front_setPoint < self.arm_front_right_position):
@@ -75,22 +76,7 @@ class RosiNodeClass():
 					self.arm_rear_left_rotSpeed = ((2*math.pi + self.arm_rear_setPoint) - self.arm_rear_left_position)
 				else:
 					self.arm_rear_left_rotSpeed = (self.arm_rear_setPoint - self.arm_rear_left_position)
-			
 			else:
-				if (abs(self.arm_front_setPoint-self.arm_front_right_position)<0.06):
-					self.arm_front_right_rotSpeed = 0
-				elif(self.arm_front_setPoint  < self.arm_front_right_position):
-					self.arm_front_right_rotSpeed = (self.arm_front_right_position - self.arm_front_setPoint)
-				else:
-					self.arm_front_right_rotSpeed = ((2*math.pi + self.arm_front_right_position) - self.arm_front_setPoint)
-				
-				if (abs(self.arm_front_setPoint-abs(self.arm_front_left_position))<0.06):
-					self.arm_front_left_rotSpeed = 0
-				elif(self.arm_front_setPoint  < abs(self.arm_front_left_position)):
-					self.arm_front_left_rotSpeed = (abs(self.arm_front_left_position) - self.arm_front_setPoint)
-				else:
-					self.arm_front_left_rotSpeed = ((2*math.pi + abs(self.arm_front_left_position)) - self.arm_front_setPoint)			
-
 				if (abs(self.arm_rear_setPoint-abs(self.arm_rear_right_position))<0.06):
 					self.arm_rear_right_rotSpeed = 0
 				elif(self.arm_rear_setPoint  < abs(self.arm_rear_right_position)):
@@ -120,13 +106,13 @@ class RosiNodeClass():
 
 				# separates each arm side command
 				if i == 0:
-					arm_command.joint_var = 2 * self.arm_front_right_rotSpeed
+					arm_command.joint_var = 1.5 * self.arm_front_right_rotSpeed
 				elif i == 2:
-					arm_command.joint_var = 2 * self.arm_front_left_rotSpeed
+					arm_command.joint_var = 1.5 * self.arm_front_left_rotSpeed
 				elif i == 1:
-					arm_command.joint_var = 2 * self.arm_rear_right_rotSpeed
+					arm_command.joint_var = 1.5 * self.arm_rear_right_rotSpeed
 				else:
-					arm_command.joint_var = 2 * self.arm_rear_left_rotSpeed
+					arm_command.joint_var = 1.5 * self.arm_rear_left_rotSpeed
 
 				# appending the command to the list
 				arm_command_list.movement_array.append(arm_command)
@@ -146,7 +132,8 @@ class RosiNodeClass():
 
 	# joystick callback function
 	def callback_Arm_sp(self, msg):
-		self.arm_direction = msg.dir
+		self.arm_front_direction = msg.front_dir
+		self.arm_rear_direction = msg.rear_dir
 		# saving_arms_setpoints
 		self.arm_front_setPoint = msg.front_arms_sp
 		self.arm_rear_setPoint = msg.rear_arms_sp
