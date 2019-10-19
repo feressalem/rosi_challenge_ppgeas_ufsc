@@ -7,15 +7,13 @@
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Twist.h>
-#include <rtabmap_ros/ResetPose.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <ppgeas/DetectConveyorBelt.h>
-#include <ppgeas/Planning.h>
 
 float array_arm_pos[2] = {};
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
-int State = 0;
+int State = 0;  //inicial state
 
 void chatterCallback1(const rosi_defy::RosiMovementArray::ConstPtr& msg)
 {
@@ -36,10 +34,8 @@ int main(int argc, char** argv){
     ROS_INFO("Waiting for the move_base action server to come up");
   }
   ros::Subscriber sub = n.subscribe<rosi_defy::RosiMovementArray>("/rosi/arms_joints_position", 1, chatterCallback1);
-  ros::service::waitForService("/rtabmap/reset_odom_to_pose");
-  ros::ServiceClient spawner = n.serviceClient<rtabmap_ros::ResetPose>("/rtabmap/reset_odom_to_pose");
-  ros::service::waitForService("/rtabmap/reset");
-  ros::ServiceClient spawner2 = n.serviceClient<std_srvs::Empty>("/rtabmap/reset");
+
+
   ros::service::waitForService("/move_base/clear_costmaps");
   ros::ServiceClient spawner3 = n.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
 
@@ -52,9 +48,7 @@ int main(int argc, char** argv){
   // ######################################################################################### Renan
 
   // ######################################################################################### Renan
-  ros::service::waitForService("planning");
-  ros::ServiceClient arm_center = n.serviceClient<ppgeas::Planning>("planning");
-  ppgeas::Planning srv_planning;
+
   // ######################################################################################### Renan
 
   tf2_ros::Buffer tfBuffer;
@@ -63,7 +57,7 @@ int main(int argc, char** argv){
   geometry_msgs::PoseWithCovarianceStamped initPose_;
 
   move_base_msgs::MoveBaseGoal goal;
-  rtabmap_ros::ResetPose pose;
+
   std_srvs::Empty c;
   while (ros::ok())
     {
@@ -89,7 +83,7 @@ int main(int argc, char** argv){
         initPose_.pose.pose.orientation.w = transformStamped.transform.rotation.w;
       //publish msg
         initPosePub_.publish(initPose_);
-      if (::array_arm_pos[0] <= -2){
+      if (::array_arm_pos[0] <= -2.5){
         ROS_INFO("mudando estado");
         State++;
       }
@@ -97,59 +91,11 @@ int main(int argc, char** argv){
     if (State == 1){
 
         ROS_INFO("Estado 1 : resetando mapa e odometria");
-        try{
-        transformStamped = tfBuffer.lookupTransform("map", "static_rosiInitialPose",
-                                 ros::Time(0));
-        }
-        catch (tf2::TransformException &ex) {
-          ROS_WARN("%s",ex.what());
-          ros::Duration(1.0).sleep();
-          continue;
-        }
-        tf::Quaternion q(transformStamped.transform.rotation.x, transformStamped.transform.rotation.y, transformStamped.transform.rotation.z, transformStamped.transform.rotation.w);
-        tf::Matrix3x3 m(q);
-        double roll, pitch, yaw;
-        m.getRPY(roll, pitch, yaw);
-        ROS_INFO("roll, pitch, yaw=%1.2f  %1.2f  %1.2f", roll, pitch, yaw);
 
-        pose.request.x = transformStamped.transform.translation.x;
-        pose.request.y = transformStamped.transform.translation.y;
-        pose.request.z = 0;
-        pose.request.roll = 0;
-        pose.request.pitch = 0;
-        pose.request.yaw = yaw;
-
-
-
-        if (spawner.call(pose))
-        {
-            ROS_INFO("Odometria resetada com sucesso");
-
-        } else {
-            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
-            return 1;
-        }
-        if (spawner2.call(c))
-        {
-            ROS_INFO("Mapa resetado com sucesso");
-
-        } else {
-            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
-            return 1;
-        }
-        if (spawner2.call(c))
-        {
-            ROS_INFO("Mudando estado");
-            // State++; //MUDEI de volta
-
-        } else {
-            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
-            return 1;
-        }
         if (spawner3.call(c))
         {
             ROS_INFO("Limpando costmaps");
-            State=30; //MUDEI de volta
+            State = 3; //MUDEI de volta
 
         } else {
             ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
@@ -190,8 +136,8 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -5.5;
-      goal.target_pose.pose.position.y = 2.4; //1.9
+      goal.target_pose.pose.position.x = -5.3;
+      goal.target_pose.pose.position.y = 1.9;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -205,7 +151,7 @@ int main(int argc, char** argv){
 
       if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
         ROS_INFO("Hooray, the base moved to a long goal");
-        State++;
+        State=30;
       }
       else{
         ROS_INFO("The base failed to move forward 1 meter for some reason");

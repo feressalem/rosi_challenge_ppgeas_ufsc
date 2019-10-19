@@ -125,10 +125,11 @@
 	<node name="base_controller_node" pkg="ppgeas" type="base_controller.py" respawn="true"/>
 
 	<!-- running the state machine node -->
-	<!--<node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/>-->
+	<node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/>
+
 
 	<!-- running the conveyor belt detection node -->
-	<!-- node name="belt_detec" pkg="ppgeas" type="conveyorbelt_detection.py" respawn="true"/ -->
+	<node name="belt_detec" pkg="ppgeas" type="conveyorbelt_detection.py" respawn="true"/>
 
 	<!-- running the fire detection node -->
 	<!-- node name="fire_detec" pkg="ppgeas" type="fire_detection.py" respawn="true"/ -->
@@ -140,7 +141,7 @@
 	<node name="odometry_node" pkg="ppgeas" type="odometry_node" respawn="true"/>
 
 	<!-- FAKE CONTROLLER OUTPUT -->
-	<!-- node name="fake_controller_output_node" pkg="ppgeas" type="fake_controller_output_node" respawn="true"/ --> 
+	<node name="fake_controller_output_node" pkg="ppgeas" type="fake_controller_output_node" respawn="true"/> 
 
 	<!-- UR5 INTERFACE -->
 	<!-- node name="ur5_interface_node" pkg="ppgeas" type="ur5_interface_node" respawn="false"/ -->
@@ -157,7 +158,7 @@
             transform_tolerance: 0.01
            # min_height: 0.2
            # max_height: 0.4
-            min_height: -0.15
+            min_height: -0.1
             max_height: 0.1
 
             angle_min: -1.5708 #-0.7854 # -M_PI/2
