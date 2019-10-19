@@ -66,6 +66,7 @@ int main(int argc, char** argv){
 
   static tf2_ros::TransformBroadcaster br;
   geometry_msgs::TransformStamped transformStamped;
+  transformStamped.transform.rotation.w = 1;
 
   while(ros::ok()){
 
