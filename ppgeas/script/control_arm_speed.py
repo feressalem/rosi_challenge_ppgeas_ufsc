@@ -25,9 +25,9 @@ class RosiNodeClass():
 		self.arm_rear_right_rotSpeed = 0
 		self.arm_rear_left_rotSpeed = 0
 		self.arm_front_direction = 0
-		self.arm_rear_direction = 0
-		self.arm_front_setPoint = 0
-		self.arm_rear_setPoint = 0
+		self.arm_rear_direction = 1
+		self.arm_front_setPoint = 2.7
+		self.arm_rear_setPoint = 0.5
 		self.arm_front_right_position = 0
 		self.arm_front_left_position = 0
 		self.arm_rear_right_position = 0

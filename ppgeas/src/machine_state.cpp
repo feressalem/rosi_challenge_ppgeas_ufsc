@@ -34,7 +34,7 @@
 
 float array_arm_pos[2] = {};
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
-int State = 5;  //inicial state
+int State = 0;  //inicial state
 
 void chatterCallback1(const rosi_defy::RosiMovementArray::ConstPtr& msg)
 {
