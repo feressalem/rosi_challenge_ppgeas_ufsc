@@ -17,8 +17,8 @@ from cv_bridge import CvBridge, CvBridgeError
 from ppgeas.srv import DetectConveyorBelt,DetectConveyorBeltResponse
 import imutils
 
-kernel = numpy.ones((40,40), numpy.uint8)
-kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(40,40))
+kernel0 = numpy.ones((10,10), numpy.uint8)
+kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(20,20))
 #print(kernel2)
 #ctrX = 0;
 #ctrY = 0;
@@ -50,7 +50,7 @@ class image_converter:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
       print(e)
-    # Espelha a imagem
+    # Espelha a imagem3,3
     #cv_image_original = cv_image
     cv_image = cv2.flip(cv_image, +1)
     rangemax = numpy.array([255, 255, 255]) # B, G, R
@@ -61,9 +61,13 @@ class image_converter:
     #ret, thresh = cv2.threshold(mask,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     # noise removal
     kernel = numpy.ones((3,3),numpy.uint8)
+    #erode = cv2.erode(thresh, kernel0, iterations=1)
     opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 25)
+    #opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 35)
+    #opening2 = cv2.morphologyEx(opening,cv2.MORPH_OPEN,kernel2, iterations = 2)
+    #cv2.imshow("opening2", opening2)
     # sure background area
-    sure_bg = cv2.dilate(opening,kernel,iterations=3)
+    sure_bg = cv2.dilate(opening,kernel,iterations=1)
     # Finding sure foreground area
     dist_transform = cv2.distanceTransform(opening,cv2.DIST_L2,5)
     ret, sure_fg = cv2.threshold(dist_transform,0.7*dist_transform.max(),255,0)
@@ -92,7 +96,7 @@ class image_converter:
     #erode = cv2.erode(close, kernel2, iterations=3)
     #edges = cv2.Canny(erode,100,200)
 
-    cnts = cv2.findContours(unknown.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     for c in cnts:
         M = cv2.moments(unknown)
@@ -136,9 +140,9 @@ class image_converter:
     #except CvBridgeError as e:
     #  print(e)
     # Apresenta o resultado em uma janela separada
-    cv2.imshow("window", unknown)
+    #cv2.imshow("window", unknown)
     cv2.imshow("window2", cv_image)
-    cv2.imshow("window3", edges)
+    #cv2.imshow("window3", edges)
     cv2.waitKey(10)
 
   # Metodo para lidar com a requisicao de servico e o retorno da resposta

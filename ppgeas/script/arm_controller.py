@@ -46,6 +46,7 @@
 import sys
 import copy
 import rospy
+import numpy
 import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
@@ -57,6 +58,8 @@ from sensor_msgs.msg import JointState
 from rosi_defy.msg import ManipulatorJoints
 from ppgeas.srv import DetectConveyorBelt
 from ppgeas.srv import DetectConveyorBeltResponse
+from geometry_msgs.msg import TwistStamped
+from rosi_defy.msg import HokuyoReading
 ## END_SUB_TUTORIAL
 
 def all_close(goal, actual, tolerance):
@@ -93,9 +96,12 @@ class MoveGroupPythonIntefaceTutorial(object):
     rospy.init_node('move_group_python_interface_tutorial',
                     anonymous=True)
     self.seq_points = []
+    self.dist = 100
     self.sub_manipulatorStates = rospy.Subscriber('/ur5/jointsPositionCurrentState', ManipulatorJoints, self.callback_Mstates)
+    self.sub_force = rospy.Subscriber('/ur5/forceTorqueSensorOutput', TwistStamped, self.callback_Force)
+    self.sub_hokuyo = rospy.Subscriber('/sensor/hokuyo', HokuyoReading, self.callback_Hokuyo)
     self.joint_states = rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.callback_Jstates, queue_size=100)
-    self.pub_manipulator = rospy.Publisher('/ur5/jointsPosTargetCommand', ManipulatorJoints, queue_size=1)
+    self.pub_manipulator = rospy.Publisher('/ur5/jointsPosTargetCommand', ManipulatorJoints, queue_size=100)
     ## Instantiate a `RobotCommander`_ object. This object is the outer-level interface to
     ## the robot:
     robot = moveit_commander.RobotCommander()
@@ -144,6 +150,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## END_SUB_TUTORIAL
 
     # Misc variables
+    self.force = 0
     self.box_name = ''
     self.robot = robot
     self.scene = scene
@@ -152,6 +159,23 @@ class MoveGroupPythonIntefaceTutorial(object):
     self.planning_frame = planning_frame
     self.eef_link = eef_link
     self.group_names = group_names
+
+  # Retorna os estados do manipulador segundo topico do vrep
+  def callback_Hokuyo(self, msg):
+      #min = 100
+      for i in range(0,len(msg.reading),3):
+          measure = numpy.array([msg.reading[i],msg.reading[i+1],msg.reading[i+2]])
+          norm = numpy.linalg.norm(measure)
+          if self.dist > norm:
+              self.dist = norm
+      #print("Norma: ", min)
+      #pos = len(msg.reading)#numpy.round(len(msg.reading)/2)
+      #self.laser = msg.reading[pos]
+      #print(pos)
+
+  # Retorna os estados do manipulador segundo topico do vrep
+  def callback_Force(self, msg):
+      self.force = msg.twist.linear.z
 
   # Retorna os estados do manipulador segundo topico do vrep
   def callback_Mstates(self, msg):
@@ -164,10 +188,10 @@ class MoveGroupPythonIntefaceTutorial(object):
       self.seq_points.append(list(msg.position))
 
   def executar(self):
-      print(self.seq_points)
+      #print(self.seq_points)
       for juntas in self.seq_points:
           self.pub_manipulator.publish(joint_variable=juntas)
-          #rospy.sleep(0.2)
+          rospy.sleep(0.2)
 
   def go_to_joint_state(self):
     # Copy class variables to local variables to make the web tutorials more clear.
@@ -219,10 +243,13 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## We can plan a motion for this group to a desired pose for the
     ## end-effector:
     pose_goal = geometry_msgs.msg.Pose()
-    pose_goal.orientation.w = 1.0
-    pose_goal.position.x = 0.4
-    pose_goal.position.y = 0.1
-    pose_goal.position.z = 0.4
+    pose_goal.orientation.x = -0.5004
+    pose_goal.orientation.y = 0.4992
+    pose_goal.orientation.z = 0.5
+    pose_goal.orientation.w = 0.5004
+    pose_goal.position.x = 0.2
+    pose_goal.position.y = 0.2
+    pose_goal.position.z = 0.9
     group.set_pose_target(pose_goal)
 
     ## Now, we call the planner to compute the plan and execute it.
@@ -241,7 +268,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     current_pose = self.group.get_current_pose().pose
     return all_close(pose_goal, current_pose, 0.01)
 
-  def plan_cartesian_path(self, scale=1, direcao=1):
+  def plan_cartesian_path(self, scale=1, direcao=0):
     # Copy class variables to local variables to make the web tutorials more clear.
     # In practice, you should use the class variables directly unless you have a good
     # reason not to.
@@ -257,11 +284,17 @@ class MoveGroupPythonIntefaceTutorial(object):
     waypoints = []
 
     wpose = group.get_current_pose().pose
+    #if direcao == 0:
+    #    wpose.position.z -= scale*0.02  # First move up (z) #
+    #    waypoints.append(copy.deepcopy(wpose))
     if direcao == 1:
-        wpose.position.y -= scale*0.3
+        wpose.position.x += scale*0.02
         waypoints.append(copy.deepcopy(wpose))
     elif direcao == 2:
-        wpose.position.z -= scale*0.3  # First move up (z) #
+        wpose.position.z -= scale*0.02  # First move up (z) #
+        waypoints.append(copy.deepcopy(wpose))
+    if direcao == 3:
+        wpose.position.y += scale*0.01
         waypoints.append(copy.deepcopy(wpose))
 
     #wpose.position.x += scale * 0.1  # Second move forward/backwards in (x)
@@ -275,7 +308,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     # translation.  We will disable the jump threshold by setting it to 0.0 disabling:
     (plan, fraction) = group.compute_cartesian_path(
                                     waypoints,   # waypoints to follow
-                                    0.01,        # eef_step
+                                    0.01,        # eef_step 0.01
                                     0.0)         # jump_threshold
 
     # Note: We are just planning, not asking move_group to actually move the robot yet:
@@ -470,49 +503,70 @@ class MoveGroupPythonIntefaceTutorial(object):
 
   def planejamento(self):
       window_size_y = 640
+      offset_y = 40
+      offset_z = 40
       window_size_z = 480
-      limit = 5
+      limit = 10
       response = self.center_detection()
       cy = response.ctdx
       cz = response.ctdy
       i = 0
-#      while (abs(cy - window_size_y/2) > limit):
-#          if (cy - window_size_y/2) > limit:
-#              cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 1)
-#              self.display_trajectory(cartesian_plan)
-#              self.execute_plan(cartesian_plan)
-#              self.executar()
-#          else:
-#              cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 1)
-#              self.display_trajectory(cartesian_plan)
-#              self.execute_plan(cartesian_plan)
-#              self.executar()
-#          response = self.center_detection()
-#          cy = response.ctdx
-#          cz = response.ctdy
+      self.go_to_pose_goal()
+      #self.executar()
+      rospy.sleep(5)
+      #rospy.sleep(2)
+      while (abs(cy - window_size_y/2) > limit):
+          print("Executando X")
+          if (cy - window_size_y/2) > limit:
+              cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 1)
+              self.display_trajectory(cartesian_plan)
+              self.execute_plan(cartesian_plan)
+              #self.executar()
+          else:
+              cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 1)
+              self.display_trajectory(cartesian_plan)
+              self.execute_plan(cartesian_plan)
+              #self.executar()
+          response = self.center_detection()
+          cy = response.ctdx
+          cz = response.ctdy
       while (abs(cz - window_size_z/2) > limit):
+          print("Executando Z")
           if (cz - window_size_z/2) > limit:
               cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 2)
               self.display_trajectory(cartesian_plan)
               self.execute_plan(cartesian_plan)
-              self.executar()
+              #self.executar()
           else:
               cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 2)
               self.display_trajectory(cartesian_plan)
               self.execute_plan(cartesian_plan)
-              self.executar()
+              #self.executar()
           response = self.center_detection()
           cy = response.ctdx
           cz = response.ctdy
+      while self.force < 0.4:
+          print("Executando Y")
+          if self.dist > 0.1:
+              cartesian_plan, fraction = self.plan_cartesian_path(scale = 3, direcao = 3)
+              self.display_trajectory(cartesian_plan)
+              self.execute_plan(cartesian_plan)
+              #self.executar()
+          else:
+              cartesian_plan, fraction = self.plan_cartesian_path(scale=1, direcao = 3)
+              self.display_trajectory(cartesian_plan)
+              self.execute_plan(cartesian_plan)
+              #self.executar()
 
 def main():
   try:
-    print "============ Press `Enter` to begin the tutorial by setting up the moveit_commander (press ctrl-d to exit) ..."
+    #print "============ Press `Enter` to begin the tutorial by setting up the moveit_commander (press ctrl-d to exit) ..."
     #raw_input()
     tutorial = MoveGroupPythonIntefaceTutorial()
 
-    print "============ Press `Enter` to plan and display a Cartesian path ..."
+    #print "============ Press `Enter` to plan and display a Cartesian path ..."
     #raw_input()
+    #tutorial.go_to_pose_goal()
     tutorial.planejamento()
     #print "============ Press `Enter` to execute a movement using a joint state goal ..."
     #raw_input()
