@@ -177,6 +177,13 @@ target_link_libraries(odometry_node ${catkin_LIBRARIES})
 add_executable(clock_node src/clock.cpp)
 target_link_libraries(clock_node ${catkin_LIBRARIES})
 
+add_executable(ur5_interface_node src/ur5_interface.cpp)
+target_link_libraries(ur5_interface_node ${catkin_LIBRARIES})
+add_dependencies(machine_state ppgeas_gencpp)
+
+add_executable(fake_controller_output_node src/fake_controller_output.cpp)
+target_link_libraries(fake_controller_output_node ${catkin_LIBRARIES})
+
 
 # Define compile flags
 set_target_properties(kinect_converter PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")

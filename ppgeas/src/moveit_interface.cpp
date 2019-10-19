@@ -192,43 +192,43 @@ int main(int argc, char** argv)
   // Path constraints can easily be specified for a link on the robot.
   // Let's specify a path constraint and a pose goal for our group.
   // First define the path constraint.
-  moveit_msgs::OrientationConstraint ocm;
-  ocm.link_name = "tool_pointer";
-  ocm.header.frame_id = "base_link";
-  ocm.orientation.w = 1.0;
-  ocm.absolute_x_axis_tolerance = 0.1;
-  ocm.absolute_y_axis_tolerance = 0.1;
-  ocm.absolute_z_axis_tolerance = 0.1;
-  ocm.weight = 1.0;
+//  moveit_msgs::OrientationConstraint ocm;
+//  ocm.link_name = "tool_pointer";
+//  ocm.header.frame_id = "base_link";
+//  ocm.orientation.w = 1.0;
+//  ocm.absolute_x_axis_tolerance = 0.1;
+//  ocm.absolute_y_axis_tolerance = 0.1;
+//  ocm.absolute_z_axis_tolerance = 0.1;
+//  ocm.weight = 1.0;
 
   // Now, set it as the path constraint for the group.
-  moveit_msgs::Constraints test_constraints;
-  test_constraints.orientation_constraints.push_back(ocm);
-  move_group.setPathConstraints(test_constraints);
+//  moveit_msgs::Constraints test_constraints;
+//  test_constraints.orientation_constraints.push_back(ocm);
+//  move_group.setPathConstraints(test_constraints);
 
   // We will reuse the old goal that we had and plan to it.
   // Note that this will only work if the current state already
   // satisfies the path constraints. So, we need to set the start
   // state to a new pose.
-  robot_state::RobotState start_state(*move_group.getCurrentState());
-  geometry_msgs::Pose start_pose2;
-  start_pose2.orientation.w = 1.0;
-  start_pose2.position.x = 0.55;
-  start_pose2.position.y = -0.05;
-  start_pose2.position.z = 0.8;
-  start_state.setFromIK(joint_model_group, start_pose2);
-  move_group.setStartState(start_state);
+//  robot_state::RobotState start_state(*move_group.getCurrentState());
+//  geometry_msgs::Pose start_pose2;
+//  start_pose2.orientation.w = 1.0;
+//  start_pose2.position.x = 0.55;
+//  start_pose2.position.y = -0.05;
+//  start_pose2.position.z = 0.8;
+//  start_state.setFromIK(joint_model_group, start_pose2);
+//  move_group.setStartState(start_state);
 
   // Now we will plan to the earlier pose target from the new
   // start state that we have just created.
-  move_group.setPoseTarget(target_pose1);
+//  move_group.setPoseTarget(target_pose1);
 
   // Planning with constraints can be slow because every sample must call an inverse kinematics solver.
   // Lets increase the planning time from the default 5 seconds to be sure the planner has enough time to succeed.
-  move_group.setPlanningTime(10.0);
+//  move_group.setPlanningTime(10.0);
 
-  success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 3 (constraints) %s", success ? "" : "FAILED");
+//  success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+//  ROS_INFO_NAMED("tutorial", "Visualizing plan 3 (constraints) %s", success ? "" : "FAILED");
 
   // Visualize the plan in RViz
   //visual_tools.deleteAllMarkers();
@@ -240,7 +240,8 @@ int main(int argc, char** argv)
   //visual_tools.prompt("next step");
 
   // When done with the path constraint be sure to clear it.
-  move_group.clearPathConstraints();
+  
+//  move_group.clearPathConstraints();
 
   // Cartesian Paths
   // ^^^^^^^^^^^^^^^

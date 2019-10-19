@@ -39,7 +39,7 @@
 	<!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
           <param name="ignore_timestamp" value="false" />
         </node>-->
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+	<!-- node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" / -->
 
   <!-- Demo.launch attached -->
   <!-- specify the planning pipeline -->
@@ -91,10 +91,10 @@
   </include>
 
   <!-- Run Rviz and load the default config to see the state of the move_group node -->
-  <!--<include file="$(find rosi_moveit_config)/launch/moveit_rviz.launch">
+  <include file="$(find rosi_moveit_config)/launch/moveit_rviz.launch">
     <arg name="rviz_config" value="$(find rosi_moveit_config)/launch/moveit.rviz"/>
     <arg name="debug" value="$(arg debug)"/>
-  </include>-->
+  </include>
 
   <!-- If database loading was enabled, start mongodb as well -->
   <include file="$(find rosi_moveit_config)/launch/default_warehouse_db.launch" if="$(arg db)">
@@ -139,7 +139,13 @@
 	<!-- ODOMETRY NODE-->
 	<node name="odometry_node" pkg="ppgeas" type="odometry_node" respawn="true"/>
 
-	<!-- transfer velodyne pointoclouds to velodyne_new frame_id -->
+	<!-- FAKE CONTROLLER OUTPUT -->
+	<!-- node name="fake_controller_output_node" pkg="ppgeas" type="fake_controller_output_node" respawn="true"/ --> 
+
+	<!-- UR5 INTERFACE -->
+	<!-- node name="ur5_interface_node" pkg="ppgeas" type="ur5_interface_node" respawn="false"/ -->
+
+	<!-- transfer velodyne pointclouds to velodyne_new frame_id -->
   <node name="pcl_tf" pkg="ppgeas" type="pcl_tf" />
 
 	<!-- convert transferred velodyne pointoclouds to 2d laserscan -->

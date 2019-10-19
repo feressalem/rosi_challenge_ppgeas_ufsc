@@ -5,6 +5,13 @@
   <arg name="moveit_controller_manager" default="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
   <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
 
-  <!-- loads ros_controllers to the param server -->
+  <arg name="controller_manager_name" default="simple_controller_manager" />
+  <param name="controller_manager_name" value="$(arg controller_manager_name)" />
+
+  <arg name="use_controller_manager" default="true" />
+  <param name="use_controller_manager" value="$(arg use_controller_manager)" />
+
+  <!-- loads controllers to the param server -->
   <rosparam file="$(find rosi_moveit_config)/config/ros_controllers.yaml"/>
+
 </launch>

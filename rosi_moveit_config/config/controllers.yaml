@@ -1,0 +1,13 @@
+controller_list:
+ - name: arm_controller
+   action_ns: joint_trajectory
+   type: JointPositionController
+   default: true
+   joints:
+     - joint_ur5_j1
+     - joint_ur5_j2
+     - joint_ur5_j3
+     - joint_ur5_j4
+     - joint_ur5_j5
+     - joint_ur5_j6
+
