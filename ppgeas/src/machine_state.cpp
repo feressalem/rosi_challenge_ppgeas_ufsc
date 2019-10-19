@@ -29,6 +29,7 @@
 
 #include <tf/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <ppgeas/ArmsSetPoint.h>
 
 
 
@@ -64,6 +65,8 @@ int main(int argc, char** argv){
 
   ros::Publisher initPosePub_ = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 2, true);
 
+  ros::Publisher pub_Arm_sp = n.advertise<ppgeas::ArmsSetPoint>("arm_sp", 1, true);
+
   // ######################################################################################### Renan
   ros::service::waitForService("detect_conveyorbelt");
   ros::ServiceClient cb_detection = n.serviceClient<ppgeas::DetectConveyorBelt>("detect_conveyorbelt");
@@ -84,6 +87,8 @@ int main(int argc, char** argv){
   geometry_msgs::PoseWithCovarianceStamped initPose_;
 
   move_base_msgs::MoveBaseGoal goal;
+
+  ppgeas::ArmsSetPoint arm_sp_msg;
 
   std_srvs::Empty c;
   while (ros::ok())
@@ -122,7 +127,7 @@ int main(int argc, char** argv){
         if (spawner3.call(c))
         {
             ROS_INFO("Limpando costmaps");
-            State = 3; //MUDEI de volta
+            State = 30; //MUDEI de volta
 
         } else {
             ROS_ERROR("Failed to call costmap service");
@@ -553,7 +558,21 @@ int main(int argc, char** argv){
       }
 
     }
+	if (State == 30){
 
+     	ROS_INFO("Estado 30 : Subindo escada 1");
+				// while True:
+		arm_sp_msg.front_dir = 0;
+		arm_sp_msg.rear_dir = 0;
+		arm_sp_msg.front_arms_sp = 3.5;
+		arm_sp_msg.rear_arms_sp = 0.15;
+					// self.pub_Arm_sp.publish(arm_sp_msg)
+		// if (abs(self.arm_front_right_position) > 3.0) && (abs(self.arm_rear_right_setPoint - self.arm_rear_right_position) < 1e-1){
+		// 	break;
+		// }
+		State = 30;
+		pub_Arm_sp.publish(arm_sp_msg);
+    }
    // ros::spinOnce();
 
     //loop_rate.sleep();
