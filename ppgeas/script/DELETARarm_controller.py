@@ -56,6 +56,7 @@ class MoveGroupPythonInteface(object):
     # Retorna as posicoes do manipulador geradas pelo planejamento
     def callback_Jstates(self, msg):
         # pega o item posicao da mensagem e transforma em lista e joga na variavel para publicar
+        self.seq_points = []
         self.seq_points.append(list(msg.position))
 
     # Adiciona box de restricao para o planejamento nao atravessar o chao
@@ -192,8 +193,8 @@ class MoveGroupPythonInteface(object):
     def executar(self):
         #self.seq_points = list(tentativa)
         #self.yaw_cotrol()
-        print(self.seq_points)
-        for juntas in self.seq_points:
+        #print(self.seq_points)
+        for juntas in self.seq_points: # self.plan
             self.pub_manipulator.publish(joint_variable=juntas)
             rospy.sleep(0.2)
 
@@ -229,8 +230,8 @@ class MoveGroupPythonInteface(object):
         return all_close(pose_goal, current_pose, 0.01)
 
     # Metodo para enviar posicao no espaco desejada
-    #def go_to_pose_goal(self):
-    #    move_group = self.move_group
+    def go_to_pose_goal(self):
+        move_group = self.move_group
     #    #Posicao Inicial
     #    #pose_goal.orientation.x = -0.5004
     #    #pose_goal.orientation.y = 0.4992
@@ -239,24 +240,24 @@ class MoveGroupPythonInteface(object):
     #    #pose_goal.position.x = -0.10423
     #    #pose_goal.position.y = 0.22235
     #    #pose_goal.position.z = 1.1432
-    #    pose_goal = geometry_msgs.msg.Pose()
-    #    pose_goal.orientation.x = -0.5004
-    #    pose_goal.orientation.y = 0.4992
-    #    pose_goal.orientation.z = 0.5
-    #    pose_goal.orientation.w = 0.5004
-    #    pose_goal.position.x = 0.1
-    #    pose_goal.position.y = 0.3
-    #    pose_goal.position.z = 0.8
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.orientation.x = -0.5004
+        pose_goal.orientation.y = 0.4992
+        pose_goal.orientation.z = 0.5
+        pose_goal.orientation.w = 0.5004
+        pose_goal.position.x = 0.1
+        pose_goal.position.y = 0.3
+        pose_goal.position.z = 0.8
 
-    #    move_group.set_pose_target(pose_goal)
-    #    plan = move_group.go(wait=True)
-    #    move_group.stop()
-    #    move_group.clear_pose_targets()
-    #    current_pose = self.move_group.get_current_pose().pose
-    #    estados = self.robot.get_current_state()
-    #    estado_inicial = self.states.joint_variable
-    #    estado_final = estados.joint_state.position[5:11]
-    #    return all_close(pose_goal, current_pose, 0.01)
+        move_group.set_pose_target(pose_goal)
+        plan = move_group.go(wait=True)
+        move_group.stop()
+        move_group.clear_pose_targets()
+        current_pose = self.move_group.get_current_pose().pose
+        estados = self.robot.get_current_state()
+        estado_inicial = self.states.joint_variable
+        estado_final = estados.joint_state.position[5:11]
+        return all_close(pose_goal, current_pose, 0.01)
 
     def center_detection(self):
         rospy.wait_for_service('detect_conveyorbelt')
@@ -267,40 +268,40 @@ class MoveGroupPythonInteface(object):
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
 
-    #def go_centro(self): #,cy,cz
-    #    window_size_y = 640
-    #    window_size_z = 480
-    #    limit = 5
-    #    response = self.center_detection()
-    #    cy = response.ctdx
-    #    cz = response.ctdy
-    #    i = 0
-    #    while (abs(cz - window_size_z/2) > limit):
-    #        print(i)
-    #        print(abs(cy - window_size_y))
-    #        print(abs(cz - window_size_z))
-    #        move_group = self.move_group
-    #        current_pose = self.move_group.get_current_pose().pose
-    #        pose_goal = geometry_msgs.msg.Pose()
-    #        pose_goal.orientation.x = -0.5004
-    #        pose_goal.orientation.y = 0.4992
-    #        pose_goal.orientation.z = 0.5
-    #        pose_goal.orientation.w = 0.5004
-    #        pose_goal.position.x = self.move_group.get_current_pose().pose.position.x
-    #        pose_goal.position.y = self.move_group.get_current_pose().pose.position.y
-    #        pose_goal.position.z = self.move_group.get_current_pose().pose.position.z - 0.1 #(cz - window_size_z/2)/1000
+    def go_centro(self): #,cy,cz
+        window_size_y = 640
+        window_size_z = 480
+        limit = 5
+        response = self.center_detection()
+        cy = response.ctdx
+        cz = response.ctdy
+        i = 0
+        while (abs(cz - window_size_z/2) > limit):
+            print(i)
+            print(abs(cy - window_size_y))
+            print(abs(cz - window_size_z))
+            move_group = self.move_group
+            current_pose = self.move_group.get_current_pose().pose
+            pose_goal = geometry_msgs.msg.Pose()
+            pose_goal.orientation.x = -0.5004
+            pose_goal.orientation.y = 0.4992
+            pose_goal.orientation.z = 0.5
+            pose_goal.orientation.w = 0.5004
+            pose_goal.position.x = self.move_group.get_current_pose().pose.position.x
+            pose_goal.position.y = self.move_group.get_current_pose().pose.position.y
+            pose_goal.position.z = self.move_group.get_current_pose().pose.position.z - 0.1 #(cz - window_size_z/2)/1000
 
-    #        move_group.set_pose_target(pose_goal)
-    #        plan = move_group.go(wait=True)
-    #        move_group.stop()
-    #        move_group.clear_pose_targets()
-    #        self.executar()
-    #        rospy.sleep(0.5)
-    #        response = self.center_detection()
-    #        cy = response.ctdx
-    #        cz = response.ctdy
-    #        i = i + 1
-    #    return all_close(pose_goal, current_pose, 0.01)
+            move_group.set_pose_target(pose_goal)
+            plan = move_group.go(wait=True)
+            move_group.stop()
+            move_group.clear_pose_targets()
+            self.executar()
+            rospy.sleep(5)
+            response = self.center_detection()
+            cy = response.ctdx
+            cz = response.ctdy
+            i = i + 1
+        return all_close(pose_goal, current_pose, 0.01)
 
     #    #i = 0
 
@@ -331,34 +332,52 @@ class MoveGroupPythonInteface(object):
         #    return all_close(pose_goal, current_pose, 0.01)
 
     # Metodo para planejamento de pontos no plano cartesiano
-    #def plan_cartesian_path(self, scale=1):
-    #    move_group = self.move_group
-    #    waypoints = []
-    #    wpose = move_group.get_current_pose().pose
-    #    wpose.position.z -= scale * 0.1
-        #wpose.position.y += scale * 0.2
-    #    waypoints.append(copy.deepcopy(wpose))
+    def plan_cartesian_path(self, scale=1):
+        window_size_y = 640
+        window_size_z = 480
+        limit = 5
+        response = self.center_detection()
+        cy = response.ctdx
+        cz = response.ctdy
+        i = 0
+        move_group = self.move_group
+        while True: #(abs(cz - window_size_z/2) > limit)
+            waypoints = []
+            wpose = move_group.get_current_pose().pose
+            wpose.position.z -= scale * 0.1
+            waypoints.append(copy.deepcopy(wpose))
+            #wpose.position.z -= scale * 0.2
+            #waypoints.append(copy.deepcopy(wpose))
+            #wpose.position.z -= scale * 0.3
+            #waypoints.append(copy.deepcopy(wpose))
+            #wpose.position.y += scale * 0.1
 
-        #wpose.position.x += scale * 0.1
-        #wpose.position.z -= scale * 0.1
-        #waypoints.append(copy.deepcopy(wpose))
+            (plan, fraction) = move_group.compute_cartesian_path(waypoints, 0.01, 0.0)
+            self.plan = []
+            for pos in plan.joint_trajectory.points:
+                self.plan.append(list(pos.positions))
+                self.execute_plan(plan)
+                self.executar()
+                rospy.sleep(1)
+                response = self.center_detection()
+                cy = response.ctdx
+                cz = response.ctdy
+                i = i + 1
+                #print(self.plan)
+            #wpose.position.x += scale * 0.1
+            #wpose.position.z -= scale * 0.1
+            #waypoints.append(copy.deepcopy(wpose))
 
-        #wpose.position.y -= scale * 0.1
-        #wpose.position.z -= scale * 0.1
-        #waypoints.append(copy.deepcopy(wpose))
+            #wpose.position.y -= scale * 0.1
+            #wpose.position.z -= scale * 0.1
+            #waypoints.append(copy.deepcopy(wpose))
 
-    #    (plan, fraction) = move_group.compute_cartesian_path(
-    #                                       waypoints,   # waypoints to follow
-    #                                       0.01,        # eef_step
-    #                                       0.0)         # jump_threshold
-
-        #self.plan = plan
-        #print(plan) #plan.joint_trajectory.points
-        #print(plan.joint_trajectory.points[0].positions)
-        #print(plan.joint_trajectory.points[1].positions)
-        #print(plan.joint_trajectory.points[2].positions)
-        #print(fraction)
-        #return plan, fraction
+            #plan.joint_trajectory.points
+            #print(plan.joint_trajectory.points[0].positions)
+            #print(plan.joint_trajectory.points[1].positions)
+            #print(plan.joint_trajectory.points[2].positions)
+            #print(fraction)
+            #return plan, fraction
 
     # Metodo para enviar o planejamento para o rviz
     def display_trajectory(self, plan):
@@ -372,16 +391,17 @@ class MoveGroupPythonInteface(object):
         display_trajectory_publisher.publish(display_trajectory);
 
     # Metodo para executar o planejamento no gazebo
-    #def execute_plan(self, plan):
-    #    move_group = self.move_group
-    #    move_group.execute(plan, wait=True)
+    def execute_plan(self, plan):
+        move_group = self.move_group
+        move_group.execute(plan, wait=True)
 
 def main():
     try:
         arm = MoveGroupPythonInteface()
-        arm.yaw_control()
-        rospy.sleep(5)
-        arm.executar()
+        #arm.go_centro()
+        arm.plan_cartesian_path()
+        #rospy.sleep(5)
+        #arm.executar()
         #arm.go_to_pose_goal()
         #rospy.spin()
 
