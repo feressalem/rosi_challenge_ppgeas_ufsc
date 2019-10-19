@@ -7,15 +7,34 @@
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Twist.h>
-#include <rtabmap_ros/ResetPose.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <ppgeas/DetectConveyorBelt.h>
-#include <ppgeas/Planning.h>
+
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
+
+#include <moveit_msgs/DisplayRobotState.h>
+#include <moveit_msgs/DisplayTrajectory.h>
+
+#include <moveit_msgs/AttachedCollisionObject.h>
+#include <moveit_msgs/CollisionObject.h>
+
+#include <moveit_visual_tools/moveit_visual_tools.h>
+
+#include <rosi_defy/ManipulatorJoints.h>
+#include <sensor_msgs/JointState.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseStamped.h>
+
+#include <tf/transform_datatypes.h>
+#include <tf2/LinearMath/Quaternion.h>
+
+
 
 float array_arm_pos[2] = {};
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
-int State = 0;
+int State = 0;  //inicial state
 
 void chatterCallback1(const rosi_defy::RosiMovementArray::ConstPtr& msg)
 {
@@ -27,7 +46,9 @@ void chatterCallback1(const rosi_defy::RosiMovementArray::ConstPtr& msg)
 int main(int argc, char** argv){
   ros::init(argc, argv, "machine_state");
   ros::NodeHandle n;
-  ros::Rate loop_rate(10);
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
+  //ros::Rate loop_rate(10);
   //tell the action client that we want to spin a thread by default
   MoveBaseClient ac("move_base", true);
 
@@ -36,10 +57,8 @@ int main(int argc, char** argv){
     ROS_INFO("Waiting for the move_base action server to come up");
   }
   ros::Subscriber sub = n.subscribe<rosi_defy::RosiMovementArray>("/rosi/arms_joints_position", 1, chatterCallback1);
-  ros::service::waitForService("/rtabmap/reset_odom_to_pose");
-  ros::ServiceClient spawner = n.serviceClient<rtabmap_ros::ResetPose>("/rtabmap/reset_odom_to_pose");
-  ros::service::waitForService("/rtabmap/reset");
-  ros::ServiceClient spawner2 = n.serviceClient<std_srvs::Empty>("/rtabmap/reset");
+
+
   ros::service::waitForService("/move_base/clear_costmaps");
   ros::ServiceClient spawner3 = n.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
 
@@ -51,19 +70,21 @@ int main(int argc, char** argv){
   ppgeas::DetectConveyorBelt srv_detection;
   // ######################################################################################### Renan
 
-  // ######################################################################################### Renan
-  ros::service::waitForService("planning");
-  ros::ServiceClient arm_center = n.serviceClient<ppgeas::Planning>("planning");
-  ppgeas::Planning srv_planning;
+  // ######################################################################################### Danilo
+
+
+
   // ######################################################################################### Renan
 
   tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformListener tfListener(tfBuffer);
+
+
   geometry_msgs::TransformStamped transformStamped;
   geometry_msgs::PoseWithCovarianceStamped initPose_;
 
   move_base_msgs::MoveBaseGoal goal;
-  rtabmap_ros::ResetPose pose;
+
   std_srvs::Empty c;
   while (ros::ok())
     {
@@ -89,7 +110,7 @@ int main(int argc, char** argv){
         initPose_.pose.pose.orientation.w = transformStamped.transform.rotation.w;
       //publish msg
         initPosePub_.publish(initPose_);
-      if (::array_arm_pos[0] <= -2){
+      if (::array_arm_pos[0] <= -2.5){
         ROS_INFO("mudando estado");
         State++;
       }
@@ -97,62 +118,14 @@ int main(int argc, char** argv){
     if (State == 1){
 
         ROS_INFO("Estado 1 : resetando mapa e odometria");
-        try{
-        transformStamped = tfBuffer.lookupTransform("map", "static_rosiInitialPose",
-                                 ros::Time(0));
-        }
-        catch (tf2::TransformException &ex) {
-          ROS_WARN("%s",ex.what());
-          ros::Duration(1.0).sleep();
-          continue;
-        }
-        tf::Quaternion q(transformStamped.transform.rotation.x, transformStamped.transform.rotation.y, transformStamped.transform.rotation.z, transformStamped.transform.rotation.w);
-        tf::Matrix3x3 m(q);
-        double roll, pitch, yaw;
-        m.getRPY(roll, pitch, yaw);
-        ROS_INFO("roll, pitch, yaw=%1.2f  %1.2f  %1.2f", roll, pitch, yaw);
 
-        pose.request.x = transformStamped.transform.translation.x;
-        pose.request.y = transformStamped.transform.translation.y;
-        pose.request.z = 0;
-        pose.request.roll = 0;
-        pose.request.pitch = 0;
-        pose.request.yaw = yaw;
-
-
-
-        if (spawner.call(pose))
-        {
-            ROS_INFO("Odometria resetada com sucesso");
-
-        } else {
-            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
-            return 1;
-        }
-        if (spawner2.call(c))
-        {
-            ROS_INFO("Mapa resetado com sucesso");
-
-        } else {
-            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
-            return 1;
-        }
-        if (spawner2.call(c))
-        {
-            ROS_INFO("Mudando estado");
-            // State++; //MUDEI de volta
-
-        } else {
-            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
-            return 1;
-        }
         if (spawner3.call(c))
         {
             ROS_INFO("Limpando costmaps");
-            State=30; //MUDEI de volta
+            State = 3; //MUDEI de volta
 
         } else {
-            ROS_ERROR("Failed to call service /rtabmap/reset_odom_to_pose");
+            ROS_ERROR("Failed to call costmap service");
             return 1;
         }
     }
@@ -190,8 +163,8 @@ int main(int argc, char** argv){
       goal.target_pose.header.frame_id = "map";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = -5.5;
-      goal.target_pose.pose.position.y = 2.4; //1.9
+      goal.target_pose.pose.position.x = -5.3;
+      goal.target_pose.pose.position.y = 1.9;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -214,10 +187,86 @@ int main(int argc, char** argv){
 
     if (State == 5){
       ROS_INFO("Estado 5 : Tocar o rolo");
-      int cx;
-      int cy;
+
+      static const std::string PLANNING_GROUP = "manipulator";
+
+    // The :move_group_interface:`MoveGroupInterface` class can be easily
+    // setup using just the name of the planning group you would like to control and plan for.
+      moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
+  
+    // We will use the :planning_scene_interface:`PlanningSceneInterface`
+    // class to add and remove collision objects in our "virtual world" scene
+      moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+
+     // Raw pointers are frequently used to refer to the planning group for improved performance.
+      //const robot_state::JointModelGroup* joint_model_group =
+     // move_group.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
+      moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+      double cx;
+      double cy;
       int windows_size_x = 640;
-      int windows_size_y = 320;
+      int windows_size_y = 480;
+
+        try{
+        transformStamped = tfBuffer.lookupTransform("base_link", "tool_pointer",
+                                 ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+          ROS_WARN("%s",ex.what());
+          ros::Duration(1.0).sleep();
+          continue;
+        }
+      
+      //call conveyor belt service
+        if (cb_detection.call(srv_detection))
+        {
+            ROS_INFO("centroid: %.4f, %.4f", srv_detection.response.ctdx, srv_detection.response.ctdy );
+            State = 3; //MUDEI de volta
+            cx = srv_detection.response.ctdx;
+            cy = srv_detection.response.ctdy;
+        } else {
+            ROS_ERROR("Failed to call service detect_conveyorbelt");
+            return 1;
+        }
+        if (abs(cy - windows_size_y/2) < 5)
+        {
+          if(cy - windows_size_y/2 > 0)
+          {
+          geometry_msgs::Pose target_orientation;
+          target_orientation.orientation.x = transformStamped.transform.rotation.x;
+          target_orientation.orientation.y = transformStamped.transform.rotation.y;
+          target_orientation.orientation.z = transformStamped.transform.rotation.z;
+          target_orientation.orientation.w = transformStamped.transform.rotation.w;
+          target_orientation.position.x = transformStamped.transform.translation.x;
+          target_orientation.position.y = transformStamped.transform.translation.y;
+          target_orientation.position.z = transformStamped.transform.translation.z - 0.2;
+          move_group.setPoseTarget(target_orientation);
+          move_group.setPlanningTime(5.0);
+
+      bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+      ROS_INFO_NAMED("tutorial", "Visualizing plan 3 (constraints) %s", success ? "" : "FAILED");
+
+      move_group.move(); 
+        } else {
+          geometry_msgs::Pose target_orientation;
+          target_orientation.orientation.x = transformStamped.transform.rotation.x;
+          target_orientation.orientation.y = transformStamped.transform.rotation.y;
+          target_orientation.orientation.z = transformStamped.transform.rotation.z;
+          target_orientation.orientation.w = transformStamped.transform.rotation.w;
+          target_orientation.position.x = transformStamped.transform.translation.x;
+          target_orientation.position.y = transformStamped.transform.translation.y;
+          target_orientation.position.z = transformStamped.transform.translation.z  - 0.2;
+          move_group.setPoseTarget(target_orientation);
+          move_group.setPlanningTime(5.0);
+
+      bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+      ROS_INFO_NAMED("tutorial", "Visualizing plan 3 (constraints) %s", success ? "" : "FAILED");
+
+      move_group.move(); 
+        }
+        }
+
       //while(abs(srv_detection.response.cx - windows_size_x/2) < 5 && abs(srv_detection.response.cy - window_size_y/2) < 5){
       //  if(cb_detection.call(srv_detection)){
       //    ROS_INFO("Centroide x = %f", srv_detection.response.cx);
@@ -233,7 +282,7 @@ int main(int argc, char** argv){
       //    ROS_ERROR("Failed to call service arm_center")
       //  }
       //}
-      State++;
+      State = 30;
     }
 
     if (State == 6){
@@ -505,9 +554,9 @@ int main(int argc, char** argv){
 
     }
 
-    ros::spinOnce();
+   // ros::spinOnce();
 
-    loop_rate.sleep();
+    //loop_rate.sleep();
     }
 
 

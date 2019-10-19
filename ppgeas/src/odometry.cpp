@@ -7,6 +7,7 @@
 #include <geometry_msgs/TransformStamped.h>
 
 nav_msgs::Odometry gpsPose_;
+//nav_msgs::Odometry gpsPose_.pose.pose.orientation.w  = 1;
 double previous_time1;
 double previous_time2;
 
@@ -67,6 +68,8 @@ int main(int argc, char** argv){
   static tf2_ros::TransformBroadcaster br;
   geometry_msgs::TransformStamped transformStamped;
   transformStamped.transform.rotation.w = 1;
+
+  gpsPose_.pose.pose.orientation.w  = 1;
 
   while(ros::ok()){
 
