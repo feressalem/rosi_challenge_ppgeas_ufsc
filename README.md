@@ -6,7 +6,7 @@ This repository contains the ROS package solution from **PPGEAS-UFSC** group for
 
 # Package description
 
-This repository is structured as a ROS package. The folders organization is as follows:
+This repository is structured as a ROS stack. The folders organization of ppgeas is as follows:
 
 - `launch` - Contains ROS launch files for mapping and localization. 
 
@@ -16,11 +16,32 @@ This repository is structured as a ROS package. The folders organization is as f
 
 - `config` - Configuration files.
 
-- `maps` - Contains 3d point cloud database and 2d gridmap.
-
 - `msg` - Generated custom message types.
 
 - `srv` - Generated custom service types.
+
+Besides this package we used a moveit config package and IKFAST pluging for planning and execution of UR-5 arm movements.
+
+# List of C++ nodes used in the project
+
+| C++ Node  | Description |
+| ------------- | ------------- |
+| clock.cpp  | Republishes simulation time in /clock topic.  |
+| fake_controller_output.cpp  | Controls UR-5 arm through.   |
+| kinect_converter.cpp  | Flips kinect rgb and republishes with camera info.  |
+| kinect_converter_depth.cpp  | Flips kinect rgb and republishes.  |
+| machine_state.cpp  | State Machine that brings everything together for autonomy.  |
+| odometry.cpp  | Odometry /tf and topic obtained through IMU and GPS sensors.  |
+
+# List of Python nodes used in the project
+
+| Python Node  | Description |
+| ------------- | ------------- |
+| arm_controller.py  | Contains servvices servers for controlling UR-5 arm.  |
+| base_controller.py  | Converts /cmd_vel messages to specific wheels angular velocities.  |
+| control_arm_speed.py  | Controls tracking arms velocities.  |
+| conveyorbelt_detection.py  | Detects roll center.  |
+| fire_detection.py  | Detects fire.  |
 
 
 # Installation
@@ -43,6 +64,13 @@ $ cd <your_catkin_workspace>
 $ rosdep install --from-paths src --ignore-src -r -y
 ```
 
+## Install imutils (Python dependency)
+Imutils is used for visualization of images.
+```
+$ cd <your_catkin_workspace>
+$ sudo pip2 install imutils
+```
+
 ## Install move_base, moveit, rgbd_launch, eigen, RtabMap_ros, dwa_local_planner and map_server
 Alternatively, the dependencies may be installed individually by the following commands:
 ```
@@ -51,32 +79,29 @@ $ sudo apt-get install ros-melodic-moveit
 $ sudo apt-get install ros-melodic-rgbd-launch
 $ sudo apt-get install libeigen3-dev
 $ sudo apt-get install ros-melodic-rtabmap-ros
-$ sudo apt-get install ros-melodic-dwa-local-planner
+$ sudo apt-get install ros-melodic-teb-local-planner
 $ sudo apt-get install ros-melodic-map-server
+$ sudo apt-get install ros-melodic-navigation
 ```
 
 ## Running the solution
-We made three options to run our solution:
-Option 1:
+We made two options to run our solution:
+Option 1 (preferred option):
 ```
-$ roslaunch ppgeas mapping.launch rtabmap_args:="--delete_db_on_start"
+$ roslaunch ppgeas foo.launch
 ```
-Option 2:
+Option 2 (with 3d mapping):
 ```
-$ roslaunch ppgeas mapping.launch rtabmap_args:="--delete_db_on_start" rtabmapviz:=true
-```
-Option 3:
-```
-$ roslaunch ppgeas mapping.launch rtabmap_args:="--delete_db_on_start" rviz:=true
+$ roslaunch ppgeas foo-mapping.launch rtabmap_args:="--delete_db_on_start" rtabmapviz:=true
 ```
 
-## Fire detection
-The fire detection may be seem by the image in the topic /fire_test
 
-## Obs. 1: Bug detected in the timestamp
-Due to a bug detected related to the images timestamp, our solution resulted in a very slow simulation time, what made difficult to run the touch tests from the UR-5, even when disabling the simulation rendering.
+## Obs.: For evaluation purposes, please set the "time_header_getSimTime" flag to true in simulation_parameters.yaml of rosi_defy package and run the following command before starting simulation:
+```
+$ roslaunch rosi_defy load_parameters.launch
+```
 
-## Obs. 2: Issue with floating points in urdf
+## Obs. 2: Issue with floating points in urdf.
 Rviz has some kind of issue with floating points in urdf, in order to load robot description correctly in Rviz append the following code to your .bashrc file.
 ```
 $ echo 'export LC_NUMERIC='en_US.UTF-8'' >> ~/.bashrc 

@@ -486,6 +486,424 @@ int main(int argc, char** argv){
 
 
 
+    if (State == 42){
+
+     	ROS_INFO("Estado 42 : Subindo escada 2");
+     	
+		arm_sp_msg.front_dir = 1;
+		arm_sp_msg.rear_dir = 1;
+		arm_sp_msg.front_arms_sp = 0.1;
+		arm_sp_msg.rear_arms_sp = 3.5;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+		printf("%.2f\n", (abs(::array_arm_pos[0])));
+		if ((abs(::array_arm_pos[1]) > 3.0)){
+			State++;
+		}
+    }
+
+    if (State == 43){
+    	ROS_INFO("Estado 31: Limpando costmap");
+    	dynamic_reconfigure::ReconfigureRequest srv_req;
+     	dynamic_reconfigure::ReconfigureResponse srv_resp;
+     	dynamic_reconfigure::IntParameter orientation_mode_param;
+     	dynamic_reconfigure::BoolParameter obstacle_param;
+     	dynamic_reconfigure::BoolParameter ow_orientation_param;
+     	dynamic_reconfigure::Config conf;
+
+     	obstacle_param.name = "enabled";
+     	obstacle_param.value = false;
+     	conf.bools.push_back(obstacle_param);
+     	srv_req.config = conf;
+
+     	if(ros::service::call("/move_base/local_costmap/obstacle_layer/set_parameters", srv_req, srv_resp)){
+     		ROS_INFO("SEM COSTMAP!!!");
+     	} else {
+     		ROS_INFO("ACHOU ERRADO!!!");
+     	}
+     	ow_orientation_param.name = "global_plan_overwrite_orientation";
+     	ow_orientation_param.value = false;
+     	conf.bools.push_back(ow_orientation_param);
+     	srv_req.config = conf;
+
+     	if(ros::service::call("/move_base/TebLocalPlannerROS/set_parameters", srv_req, srv_resp)){
+     		ROS_INFO("SEM ORIENTATION OW!!!");
+     	} else {
+     		ROS_INFO("ACHOU ERRADO OW!!!");
+     	}
+
+     	orientation_mode_param.name = "orientation_mode";
+     	orientation_mode_param.value = 2;
+     	conf.ints.push_back(orientation_mode_param);
+     	srv_req.config = conf;
+
+     	if(ros::service::call("/move_base/GlobalPlanner/set_parameters", srv_req, srv_resp)){
+     		ROS_INFO("OREINTATION MODE INTERPOLATE!!!");
+     	} else {
+     		ROS_INFO("INTERPOLATE DEU RUIM!!!");
+     	}
+    	State++;
+    }
+
+    if (State == 44){
+
+		// ROS_INFO("Estado 32 : navegacao até o final da passarela");
+
+		goal.target_pose.header.frame_id = "map";
+		goal.target_pose.header.stamp = ros::Time::now();
+
+		goal.target_pose.pose.position.x = -51.25;
+		goal.target_pose.pose.position.y = -2.02;
+		goal.target_pose.pose.position.z = 0.0;
+		goal.target_pose.pose.orientation.x = 0.0;
+		goal.target_pose.pose.orientation.y = 0.0;
+		goal.target_pose.pose.orientation.z = 0.0;
+		goal.target_pose.pose.orientation.w = 1.0;
+
+		// ROS_INFO("Sending goal");
+		ac.sendGoal(goal);
+		// ac.waitForResult();
+		// ROS_INFO("oi");
+
+		// printf("%.2f\n", transformStamped.transform.translation.x);
+		try{
+        	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+                                ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+			ROS_WARN("%s",ex.what());
+			ros::Duration(1.0).sleep();
+			//continue;
+        }
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+        
+        if(transformStamped.transform.translation.x < -42.0){
+        	State++;
+        }
+		// if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+		// 	ROS_INFO("Hooray, the base moved to the finish goal");
+		// 	State++;
+		// }
+		// else{
+		// 	ROS_INFO("The base failed to move forward 1 meter for some reason");
+		// }
+
+    }
+
+	if (State == 45){
+
+     	// ROS_INFO("Estado 33 : Mexendo as esteiras pra conseguir subir");
+     	
+		arm_sp_msg.front_dir = 0;
+		arm_sp_msg.rear_dir = 1;
+		arm_sp_msg.front_arms_sp = 1.5;
+		arm_sp_msg.rear_arms_sp = 3.5;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+		try{
+        	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+                                ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+			ROS_WARN("%s",ex.what());
+			ros::Duration(1.0).sleep();
+			continue;
+        }
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+
+        if(transformStamped.transform.translation.x < -42.2){
+        	State++;
+        }
+    }
+
+    if (State == 46){
+
+     	// ROS_INFO("Estado 33 : Mexendo as esteiras pra conseguir subir");
+     	
+		arm_sp_msg.front_dir = 1;
+		arm_sp_msg.rear_dir = 0;
+		arm_sp_msg.front_arms_sp = 5.7;
+		arm_sp_msg.rear_arms_sp = 3;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+		try{
+        	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+                                ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+			ROS_WARN("%s",ex.what());
+			ros::Duration(1.0).sleep();
+			continue;
+        }
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+
+        if(transformStamped.transform.translation.x < -42.63){
+        	State++;
+        }
+    }
+
+    if (State == 47){
+
+     	// ROS_INFO("Estado 34 : Mexendo as esteiras pra conseguir subir");
+     	
+		arm_sp_msg.front_dir = 0;
+		arm_sp_msg.rear_dir = 1;
+		arm_sp_msg.front_arms_sp = 5.8;
+		arm_sp_msg.rear_arms_sp = 3.7;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+		
+		try{
+        	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+                                ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+			ROS_WARN("%s",ex.what());
+			ros::Duration(1.0).sleep();
+			continue;
+        }
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+
+        if(transformStamped.transform.translation.x < -42.70){
+        	State++;
+        }
+    }
+	if (State == 48){
+
+     	// ROS_INFO("Estado 34 : Mexendo as esteiras pra conseguir subir");
+     	
+		arm_sp_msg.front_dir = 0;
+		arm_sp_msg.rear_dir = 0;
+		arm_sp_msg.front_arms_sp = 2.7;
+		arm_sp_msg.rear_arms_sp = 0.5;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+		try{
+        	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+                                ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+			ROS_WARN("%s",ex.what());
+			ros::Duration(1.0).sleep();
+			continue;
+        }
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+
+        if(transformStamped.transform.translation.x < -43.20){
+        	State++;
+        }
+    }
+			// try{
+	  //       	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+	  //                               ros::Time(0));
+	  //       }
+	  //       catch (tf2::TransformException &ex) {
+			// 	ROS_WARN("%s",ex.what());
+			// 	ros::Duration(1.0).sleep();
+			// 	continue;
+	  //       }
+
+	  //       if(transformStamped.transform.translation.x < -42.35){
+	  //       	State=34;
+	  //       }
+
+
+	if (State == 49){
+
+		// ROS_INFO("Estado 32 : navegacao até o final da passarela");
+
+		goal.target_pose.header.frame_id = "map";
+		goal.target_pose.header.stamp = ros::Time::now();
+
+		goal.target_pose.pose.position.x = -51.25;
+		goal.target_pose.pose.position.y = -2.02;
+		goal.target_pose.pose.position.z = 0.0;
+		goal.target_pose.pose.orientation.x = 0.0;
+		goal.target_pose.pose.orientation.y = 0.0;
+		goal.target_pose.pose.orientation.z = 0.0;
+		goal.target_pose.pose.orientation.w = 1.0;
+
+		// ROS_INFO("Sending goal");
+		ac.sendGoal(goal);
+		
+		ac.waitForResult();
+		// ROS_INFO("oi");
+
+		// printf("%.2f\n", transformStamped.transform.translation.x);
+		// try{
+  //       	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+  //                               ros::Time(0));
+  //       }
+  //       catch (tf2::TransformException &ex) {
+		// 	ROS_WARN("%s",ex.what());
+		// 	ros::Duration(1.0).sleep();
+		// 	//continue;
+  //       }
+
+  //       printf("%.2f\n", transformStamped.transform.translation.x);
+        
+  //       if(transformStamped.transform.translation.x < -42.25){
+  //       	State++;
+  //       }
+		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+			ROS_INFO("Hooray, the base moved to the finish goal");
+			State++;
+		}
+		else{
+			ROS_INFO("The base failed to move forward 1 meter for some reason");
+		}
+
+    }
+
+    if (State == 50){
+
+		// ROS_INFO("Estado 32 : navegacao até o final da passarela");
+
+		goal.target_pose.header.frame_id = "map";
+		goal.target_pose.header.stamp = ros::Time::now();
+
+		goal.target_pose.pose.position.x = -43;
+		goal.target_pose.pose.position.y = -2.02;
+		goal.target_pose.pose.position.z = 0.0;
+		goal.target_pose.pose.orientation.x = 0.0;
+		goal.target_pose.pose.orientation.y = 0.0;
+		goal.target_pose.pose.orientation.z = 0.0;
+		goal.target_pose.pose.orientation.w = 1.0;
+
+		// ROS_INFO("Sending goal");
+		ac.sendGoal(goal);
+		
+		ac.waitForResult();
+		// ROS_INFO("oi");
+
+		// printf("%.2f\n", transformStamped.transform.translation.x);
+		// try{
+  //       	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+  //                               ros::Time(0));
+  //       }
+  //       catch (tf2::TransformException &ex) {
+		// 	ROS_WARN("%s",ex.what());
+		// 	ros::Duration(1.0).sleep();
+		// 	//continue;
+  //       }
+
+  //       printf("%.2f\n", transformStamped.transform.translation.x);
+        
+  //       if(transformStamped.transform.translation.x < -42.25){
+  //       	State++;
+  //       }
+		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+			ROS_INFO("Hooray, the base moved to the finish goal");
+			State++;
+		}
+		else{
+			ROS_INFO("The base failed to move forward 1 meter for some reason");
+		}
+
+    }
+
+	if (State == 51){ // Começa a descida
+
+     	// ROS_INFO("Estado 34 : Mexendo as esteiras pra conseguir subir");
+     	
+		arm_sp_msg.front_dir = 1;
+		arm_sp_msg.rear_dir = 0;
+		arm_sp_msg.front_arms_sp = 5.7;
+		arm_sp_msg.rear_arms_sp = 5.7;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+		
+		try{
+        	transformStamped = tfBuffer.lookupTransform("odom", "base_link",
+                                ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+			ROS_WARN("%s",ex.what());
+			ros::Duration(1.0).sleep();
+			continue;
+        }
+
+        // printf("%.2f\n", transformStamped.transform.translation.x);
+
+        // if(transformStamped.transform.translation.x > -42.25){
+        printf("%.2f\n", (abs(::array_arm_pos[0])));
+		if ((abs(::array_arm_pos[0]) > 3.0)){	
+        	State++;
+        }
+    }
+
+    if (State == 52){
+
+		// ROS_INFO("Estado 32 : navegacao até o final da passarela");
+
+		goal.target_pose.header.frame_id = "map";
+		goal.target_pose.header.stamp = ros::Time::now();
+
+		goal.target_pose.pose.position.x = -41;
+		goal.target_pose.pose.position.y = -2.02;
+		goal.target_pose.pose.position.z = 0.0;
+		goal.target_pose.pose.orientation.x = 0.0;
+		goal.target_pose.pose.orientation.y = 0.0;
+		goal.target_pose.pose.orientation.z = 0.0;
+		goal.target_pose.pose.orientation.w = 1.0;
+
+		// ROS_INFO("Sending goal");
+		ac.sendGoal(goal);
+		
+		// ac.waitForResult();
+		// ROS_INFO("oi");
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+        
+        if(transformStamped.transform.translation.x > -42.25){
+        	State++;
+        }
+    }
+
+    if (State == 53){ // Começa a descida
+
+     	// ROS_INFO("Estado 34 : Mexendo as esteiras pra conseguir subir");
+     	
+		arm_sp_msg.front_dir = 0;
+		arm_sp_msg.rear_dir = 1;
+		arm_sp_msg.front_arms_sp = 0.5;
+		arm_sp_msg.rear_arms_sp = 1;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+
+        if(transformStamped.transform.translation.x > -41.5){
+        	State++;
+        }
+    }
+
+    if (State == 54){ // Começa a descida
+
+     	// ROS_INFO("Estado 34 : Mexendo as esteiras pra conseguir subir");
+     	
+		arm_sp_msg.front_dir = 0;
+		arm_sp_msg.rear_dir = 0;
+		arm_sp_msg.front_arms_sp = 2.7;
+		arm_sp_msg.rear_arms_sp = 0.5;
+		
+		pub_Arm_sp.publish(arm_sp_msg);
+
+        printf("%.2f\n", transformStamped.transform.translation.x);
+
+        if(transformStamped.transform.translation.x > -41){
+        	State=500;
+        }
+    }
+
+
+
+
    // ros::spinOnce();
 
     //loop_rate.sleep();
