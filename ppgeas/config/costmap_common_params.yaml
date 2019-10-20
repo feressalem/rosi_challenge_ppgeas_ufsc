@@ -2,7 +2,7 @@ obstacle_range: 3.5
 raytrace_range: 4.0
 footprint: [[0.5, 0.3], [-0.5, 0.3], [-0.5, -0.3], [0.5, -0.3]]
 #robot_radius: 0.4
-inflation_radius: 0.15
+# inflation_radius: 0.15
 transform_tolerance: 10
 
 plugins: 

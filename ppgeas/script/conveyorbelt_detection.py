@@ -61,8 +61,8 @@ class image_converter:
     #ret, thresh = cv2.threshold(mask,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     # noise removal
     kernel = numpy.ones((3,3),numpy.uint8)
-    #erode = cv2.erode(thresh, kernel0, iterations=1)
-    opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 25)
+    opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 5)
+    erode = cv2.erode(opening, kernel2, iterations=2)
     #opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 35)
     #opening2 = cv2.morphologyEx(opening,cv2.MORPH_OPEN,kernel2, iterations = 2)
     #cv2.imshow("opening2", opening2)

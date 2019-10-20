@@ -347,7 +347,12 @@ class MoveGroupPythonIntefaceTutorial(object):
     #if direcao == 0:
     #    wpose.position.z -= scale*0.02  # First move up (z) #
     #    waypoints.append(copy.deepcopy(wpose))
-    if direcao == 1:
+    if direcao == 0:
+        wpose.position.y = wpose.position.y
+        wpose.position.z -= scale*0.5
+        wpose.position.x = wpose.position.x
+        waypoints.append(copy.deepcopy(wpose))
+    elif direcao == 1:
         wpose.position.y = wpose.position.y
         wpose.position.z = wpose.position.z
         wpose.position.x += scale*0.02
@@ -579,7 +584,7 @@ class MoveGroupPythonIntefaceTutorial(object):
           cz = response.ctdy
           #i = 0
           #self.go_to_pose_goal(caso="inicial")
-          self.go_to_pose_goal(caso="tocar")
+          self.plan_cartesian_path(scale = 1, direcao = 1)
           #self.executar()
           #rospy.sleep(5)
           #rospy.sleep(2)
@@ -692,7 +697,65 @@ class MoveGroupPythonIntefaceTutorial(object):
                   #self.executar()
                   self.go_to_pose_goal(caso="cavalete")
                   self.go_to_pose_goal(caso="inicial")
-
+      if message == "cavalete_fogo":
+          window_size_y = 640
+          offset_y = -30
+          offset_z = -45
+          window_size_z = 480
+          limit = 10
+          response = self.fire_detection()
+          cy = response.ctdx
+          cz = response.ctdy
+          cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 0)
+          self.display_trajectory(cartesian_plan)
+          self.execute_plan(cartesian_plan)
+          while (abs(cy - window_size_y/2 - offset_y) > limit):
+              #print("Executando X")
+              if (cy - window_size_y/2 - offset_y) > limit:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 1)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              else:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 1)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              response = self.center_detection()
+              cy = response.ctdx
+              cz = response.ctdy
+          while (abs(cz - window_size_z/2 - offset_z) > limit):
+              #print("Executando Z")
+              if (cz - window_size_z/2 - offset_z) > limit:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 2)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              else:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 2)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              response = self.center_detection()
+              cy = response.ctdx
+              cz = response.ctdy
+          while self.force < 0.4:
+              print(self.dist)
+              #print("Executando Y")
+              if self.dist > 0.2:
+                  #print("ta na norma")
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 3)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              else:
+                  #print("nao ta mais")
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale=1, direcao = 3)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+                  #self.go_to_pose_goal(caso="cavalete")
+                  self.go_to_pose_goal(caso="inicial_esquerda")
 def main():
   try:
     #print "============ Press `Enter` to begin the tutorial by setting up the moveit_commander (press ctrl-d to exit) ..."

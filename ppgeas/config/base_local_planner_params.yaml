@@ -8,12 +8,12 @@ TebLocalPlannerROS:
  teb_autosize: True
  dt_ref: 0.3
  dt_hysteresis: 0.1
- global_plan_overwrite_orientation: True
+ global_plan_overwrite_orientation: False
  max_global_plan_lookahead_dist: 3.0
  feasibility_check_no_poses: 5
-
+ allow_init_with_backwards_motion: True
  # Robot
-
+         
  max_vel_x: 0.5 #0.4
  max_vel_x_backwards: 0.4 #0.2
  max_vel_theta: 0.3 #0.3
@@ -32,13 +32,13 @@ TebLocalPlannerROS:
    vertices: [ [0.5, -0.3], [0.5, 0.3], [-0.5, 0.3], [-0.5, -0.3]] # for type "polygon"
 
  # GoalTolerance
-
+    
  xy_goal_tolerance: 0.2
  yaw_goal_tolerance: 0.1
  free_goal_vel: False
-
+    
  # Obstacles
-
+    
  min_obstacle_dist: 0.2 # 0.4
  include_costmap_obstacles: True
  costmap_obstacles_behind_robot_dist: 1.0
@@ -48,7 +48,7 @@ TebLocalPlannerROS:
  costmap_converter_rate: 5
 
  # Optimization
-
+    
  no_inner_iterations: 5
  no_outer_iterations: 4
  optimization_activate: True
@@ -133,4 +133,4 @@ TebLocalPlannerROS:
 #   sim_period: 0.1
 #   xy_goal_tolerance: 0.25
 #   yaw_goal_tolerance: 0.10
-  # latch_xy_goal_tolerance: false
+# latch_xy_goal_tolerance: false
