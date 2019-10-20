@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Grid1
         - /TF1/Frames1
       Splitter Ratio: 0.4110580086708069
     Tree Height: 643
@@ -25,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -48,7 +49,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 200
       Reference Frame: map
       Value: true
     - Alpha: 1
@@ -105,8 +106,6 @@ Visualization Manager:
         camera_rgb_frame:
           Value: true
         camera_rgb_optical_frame:
-          Value: true
-        imu:
           Value: true
         kinect:
           Value: true
@@ -166,8 +165,6 @@ Visualization Manager:
                 camera_rgb_frame:
                   camera_rgb_optical_frame:
                     {}
-              imu:
-                {}
               kinect:
                 {}
               ur5_link_2:
@@ -379,6 +376,22 @@ Visualization Manager:
       Topic: /move_base/TebLocalPlannerROS/local_plan
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
+      Name: PoseArray
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
+      Shape: Arrow (Flat)
+      Topic: /move_base/TebLocalPlannerROS/teb_poses
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -403,16 +416,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 26.589954376220703
+      Distance: 8.415145874023438
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.6592180728912354
-        Y: 1.0857689380645752
-        Z: -1.0561010837554932
+        X: -1.371419906616211
+        Y: 0.7617067098617554
+        Z: 0.6269938349723816
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

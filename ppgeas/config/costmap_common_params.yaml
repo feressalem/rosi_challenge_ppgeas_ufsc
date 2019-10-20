@@ -2,7 +2,7 @@ obstacle_range: 3.5
 raytrace_range: 4.0
 footprint: [[0.5, 0.3], [-0.5, 0.3], [-0.5, -0.3], [0.5, -0.3]]
 #robot_radius: 0.4
-inflation_radius: 0.15
+inflation_radius: 0.005
 transform_tolerance: 10
 
 plugins: 
@@ -16,6 +16,5 @@ obstacle_layer:
 
  # velodyne_sensor: {sensor_frame: velodyne_new, data_type: PointCloud2, topic: sensor/velodyne_new, marking: false, clearing: true, min_obstacle_height: 0.0, max_obstacle_height: 5.0 }
 
-inflation_layer:
-  inflation_radius: 0.15
+
 

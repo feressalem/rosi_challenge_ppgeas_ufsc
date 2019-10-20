@@ -125,7 +125,7 @@
 	<node name="base_controller_node" pkg="ppgeas" type="base_controller.py" respawn="true"/>
 
 	<!-- running the state machine node -->
-	<node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/>
+	<!--node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/-->
 
 
 	<!-- running the conveyor belt detection node -->
