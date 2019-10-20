@@ -127,6 +127,8 @@
 	<!-- running the state machine node -->
 	<!--node name="state_machine" pkg="ppgeas" type="machine_state" respawn="false"/-->
 
+  <!-- running the state machine node -->
+  <node name="arm_controller_node" pkg="ppgeas" type="arm_controller.py" respawn="false"/>
 
 	<!-- running the conveyor belt detection node -->
 	<node name="belt_detec" pkg="ppgeas" type="conveyorbelt_detection.py" respawn="true"/>
@@ -165,7 +167,7 @@
             angle_max: 1.5708 # M_PI/2
             angle_increment: 0.0087 # M_PI/360.0
             scan_time: 0.2
-            range_min: 0.9
+            range_min: 0.7
             range_max: 5.0
             use_inf: true
             inf_epsilon: 1.0
