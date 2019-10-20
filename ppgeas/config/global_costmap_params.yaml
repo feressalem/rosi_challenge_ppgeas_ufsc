@@ -6,13 +6,15 @@ global_costmap:
   rolling_window: false
   track_unknown_space: true
 
-  plugins:
-      - {name: static,    type: "costmap_2d::StaticLayer"}
+  plugins: 
+      - {name: static,    type: "costmap_2d::StaticLayer"}            
+      - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+  static:        
+      map_topic: /map 
+      subscribe_to_updates: true 
 
-  static:
-      map_topic: /map
-      subscribe_to_updates: true
-
+inflation_layer:
+  inflation_radius: 0.01
   # global_frame: odom
   # robot_base_frame: base_link
   # update_frequency: 5.0

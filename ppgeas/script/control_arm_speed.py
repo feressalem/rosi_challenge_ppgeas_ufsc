@@ -62,7 +62,22 @@ class RosiNodeClass():
 					self.arm_front_left_rotSpeed = -((2*math.pi + self.arm_front_setPoint) - abs(self.arm_front_left_position))
 				else:
 					self.arm_front_left_rotSpeed = -(self.arm_front_setPoint - abs(self.arm_front_left_position))
+			else:	
+				if (abs(self.arm_front_setPoint-self.arm_front_right_position)<0.06):
+					self.arm_front_right_rotSpeed = 0
+				elif(self.arm_front_setPoint  < self.arm_front_right_position):
+					self.arm_front_right_rotSpeed = (self.arm_front_right_position - self.arm_front_setPoint)
+				else:
+					self.arm_front_right_rotSpeed = ((2*math.pi + self.arm_front_right_position) - self.arm_front_setPoint)
 				
+				if (abs(self.arm_front_setPoint-abs(self.arm_front_left_position))<0.06):
+					self.arm_front_left_rotSpeed = 0
+				elif(self.arm_front_setPoint  < abs(self.arm_front_left_position)):
+					self.arm_front_left_rotSpeed = (abs(self.arm_front_left_position) - self.arm_front_setPoint)
+				else:
+					self.arm_front_left_rotSpeed = ((2*math.pi + abs(self.arm_front_left_position)) - self.arm_front_setPoint)	
+			
+			if self.arm_rear_direction == 1:
 				if (abs(self.arm_rear_setPoint-abs(self.arm_rear_right_position))<0.06):
 					self.arm_rear_right_rotSpeed = 0
 				elif(self.arm_rear_setPoint < abs(self.arm_rear_right_position)):
