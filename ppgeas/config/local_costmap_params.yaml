@@ -1,6 +1,6 @@
 local_costmap:
   global_frame: map
-  robot_base_frame: base_link
+  robot_base_frame: base_link2 # Renan
   update_frequency: 1.0
   publish_frequency: 0.5
   static_map: false
@@ -8,4 +8,3 @@ local_costmap:
   width: 15.0
   height: 15.0
   resolution: 0.05
-

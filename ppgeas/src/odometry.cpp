@@ -12,7 +12,7 @@ double previous_time1;
 double previous_time2;
 
 void chatterCallback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg)
-{  
+{
 
   ::gpsPose_.twist.twist.linear.x = ((msg->latitude - ::gpsPose_.pose.pose.position.x)/(msg->header.stamp.toSec() - previous_time1));
   ::gpsPose_.twist.twist.linear.y = ((msg->longitude - ::gpsPose_.pose.pose.position.y)/(msg->header.stamp.toSec() - previous_time1));
@@ -22,7 +22,7 @@ void chatterCallback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg)
   ::gpsPose_.header = msg->header;
   //::gpsPose_.header.stamp = ros::Time::now();
   ::gpsPose_.header.frame_id = "odom";
-  ::gpsPose_.child_frame_id = "base_link";
+  ::gpsPose_.child_frame_id = "base_link2";
   ::gpsPose_.pose.pose.position.x = msg->latitude;
   ::gpsPose_.pose.pose.position.y = msg->longitude;
   ::gpsPose_.pose.pose.position.z = msg->altitude;
@@ -59,10 +59,10 @@ int main(int argc, char** argv){
   ros::init(argc, argv, "odometry_node");
   ros::NodeHandle n;
   ros::Rate loop_rate(5);
-  
+
   ros::Subscriber sub_gps = n.subscribe<sensor_msgs::NavSatFix>("/sensor/gps", 1, chatterCallback_gps);
   ros::Subscriber sub_imu = n.subscribe<sensor_msgs::Imu>("/sensor/imu", 1, chatterCallback_imu);
-  
+
   ros::Publisher gpsPosePub_ = n.advertise<nav_msgs::Odometry>("/odom", 1, true);
 
   static tf2_ros::TransformBroadcaster br;
@@ -77,7 +77,7 @@ int main(int argc, char** argv){
 
     transformStamped.header = ::gpsPose_.header;
     transformStamped.header.frame_id = "odom";
-    transformStamped.child_frame_id = "base_link";
+    transformStamped.child_frame_id = "base_link2";
     transformStamped.transform.translation.x = ::gpsPose_.pose.pose.position.x;
     transformStamped.transform.translation.y = ::gpsPose_.pose.pose.position.y;
     transformStamped.transform.translation.z = ::gpsPose_.pose.pose.position.z;

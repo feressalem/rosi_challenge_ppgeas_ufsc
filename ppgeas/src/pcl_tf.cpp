@@ -8,7 +8,7 @@
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
 ros::Publisher tf_pub;
-tf::TransformListener *tf_listener; 
+tf::TransformListener *tf_listener;
 
 void callback(const PointCloud::ConstPtr& pcl_in)
 {
@@ -32,6 +32,6 @@ int main(int argc, char** argv)
   tf_listener    = new tf::TransformListener();
 
   ros::spin();
-  //delete tf_listener; 
-  //return 0; 
+  //delete tf_listener;
+  //return 0;
 }

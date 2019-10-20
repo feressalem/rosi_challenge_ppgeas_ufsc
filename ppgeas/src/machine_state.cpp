@@ -29,12 +29,12 @@
 
 #include <tf/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
-
+#include <ppgeas/Touch.h>
 
 
 float array_arm_pos[2] = {};
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
-int State = 0;  //inicial state
+int State = 5;  //inicial state
 
 void chatterCallback1(const rosi_defy::RosiMovementArray::ConstPtr& msg)
 {
@@ -70,10 +70,10 @@ int main(int argc, char** argv){
   ppgeas::DetectConveyorBelt srv_detection;
   // ######################################################################################### Renan
 
-  // ######################################################################################### Danilo
-
-
-
+  // ######################################################################################### Renan
+  //ros::service::waitForService("touch");
+  //ros::ServiceClient arm = n.serviceClient<ppgeas::Touch>("touch");
+  //ppgeas::Touch srv_planning;
   // ######################################################################################### Renan
 
   tf2_ros::Buffer tfBuffer;
@@ -136,7 +136,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -3.0;
-      goal.target_pose.pose.position.y = 2.2;
+      goal.target_pose.pose.position.y = -2.2;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -164,7 +164,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -5.3;
-      goal.target_pose.pose.position.y = 1.9;
+      goal.target_pose.pose.position.y = -1.9;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -186,103 +186,13 @@ int main(int argc, char** argv){
     }
 
     if (State == 5){
-      ROS_INFO("Estado 5 : Tocar o rolo");
-
-      static const std::string PLANNING_GROUP = "manipulator";
-
-    // The :move_group_interface:`MoveGroupInterface` class can be easily
-    // setup using just the name of the planning group you would like to control and plan for.
-      moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
-  
-    // We will use the :planning_scene_interface:`PlanningSceneInterface`
-    // class to add and remove collision objects in our "virtual world" scene
-      moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-
-     // Raw pointers are frequently used to refer to the planning group for improved performance.
-      //const robot_state::JointModelGroup* joint_model_group =
-     // move_group.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
-      moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-      double cx;
-      double cy;
-      int windows_size_x = 640;
-      int windows_size_y = 480;
-
-        try{
-        transformStamped = tfBuffer.lookupTransform("base_link", "tool_pointer",
-                                 ros::Time(0));
+      ROS_INFO("Estado 5 : Manipulador");
+      /*if (arm.call(srv_planning)){
+        if(srv_planning.response.success == true){
+          State++;
         }
-        catch (tf2::TransformException &ex) {
-          ROS_WARN("%s",ex.what());
-          ros::Duration(1.0).sleep();
-          continue;
-        }
-      
-      //call conveyor belt service
-        if (cb_detection.call(srv_detection))
-        {
-            ROS_INFO("centroid: %.4f, %.4f", srv_detection.response.ctdx, srv_detection.response.ctdy );
-            State = 3; //MUDEI de volta
-            cx = srv_detection.response.ctdx;
-            cy = srv_detection.response.ctdy;
-        } else {
-            ROS_ERROR("Failed to call service detect_conveyorbelt");
-            return 1;
-        }
-        if (abs(cy - windows_size_y/2) < 5)
-        {
-          if(cy - windows_size_y/2 > 0)
-          {
-          geometry_msgs::Pose target_orientation;
-          target_orientation.orientation.x = transformStamped.transform.rotation.x;
-          target_orientation.orientation.y = transformStamped.transform.rotation.y;
-          target_orientation.orientation.z = transformStamped.transform.rotation.z;
-          target_orientation.orientation.w = transformStamped.transform.rotation.w;
-          target_orientation.position.x = transformStamped.transform.translation.x;
-          target_orientation.position.y = transformStamped.transform.translation.y;
-          target_orientation.position.z = transformStamped.transform.translation.z - 0.2;
-          move_group.setPoseTarget(target_orientation);
-          move_group.setPlanningTime(5.0);
-
-      bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-      ROS_INFO_NAMED("tutorial", "Visualizing plan 3 (constraints) %s", success ? "" : "FAILED");
-
-      move_group.move(); 
-        } else {
-          geometry_msgs::Pose target_orientation;
-          target_orientation.orientation.x = transformStamped.transform.rotation.x;
-          target_orientation.orientation.y = transformStamped.transform.rotation.y;
-          target_orientation.orientation.z = transformStamped.transform.rotation.z;
-          target_orientation.orientation.w = transformStamped.transform.rotation.w;
-          target_orientation.position.x = transformStamped.transform.translation.x;
-          target_orientation.position.y = transformStamped.transform.translation.y;
-          target_orientation.position.z = transformStamped.transform.translation.z  - 0.2;
-          move_group.setPoseTarget(target_orientation);
-          move_group.setPlanningTime(5.0);
-
-      bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-      ROS_INFO_NAMED("tutorial", "Visualizing plan 3 (constraints) %s", success ? "" : "FAILED");
-
-      move_group.move(); 
-        }
-        }
-
-      //while(abs(srv_detection.response.cx - windows_size_x/2) < 5 && abs(srv_detection.response.cy - window_size_y/2) < 5){
-      //  if(cb_detection.call(srv_detection)){
-      //    ROS_INFO("Centroide x = %f", srv_detection.response.cx);
-      //    ROS_INFO("Centroide x = %f", srv_detection.response.cy);
-      //    cx = srv_detection.response.cx;
-      //    cy = srv_detection.response.cy;
-      //  } else{
-      //    ROS_ERROR("Failed to call service cb_detection")
-      //  }
-      //  if(arm_center.call(srv_planning)){
-      //    //juntas = srv_planning.response;
-      //  }else{
-      //    ROS_ERROR("Failed to call service arm_center")
-      //  }
-      //}
-      State = 30;
+      }
+      ROS_INFO("Estado 5 : Tocar o rolo");*/
     }
 
     if (State == 6){
@@ -293,7 +203,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -12.0;
-      goal.target_pose.pose.position.y = 2.3;
+      goal.target_pose.pose.position.y = -2.3;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -322,7 +232,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -19.0;
-      goal.target_pose.pose.position.y = 2.7;
+      goal.target_pose.pose.position.y = -2.7;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -351,7 +261,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -26.0;
-      goal.target_pose.pose.position.y = 3.1;
+      goal.target_pose.pose.position.y = -3.1;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -381,7 +291,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -33.0;
-      goal.target_pose.pose.position.y = 3.5;
+      goal.target_pose.pose.position.y = -3.5;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -410,7 +320,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -40.0;
-      goal.target_pose.pose.position.y = 3.9;
+      goal.target_pose.pose.position.y = -3.9;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -445,7 +355,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -54.0;
-      goal.target_pose.pose.position.y = 3.4;
+      goal.target_pose.pose.position.y = -3.4;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -474,7 +384,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -61.0;
-      goal.target_pose.pose.position.y = 3.6;
+      goal.target_pose.pose.position.y = -3.6;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -503,7 +413,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -68.0;
-      goal.target_pose.pose.position.y = 3.8;
+      goal.target_pose.pose.position.y = -3.8;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;
@@ -532,7 +442,7 @@ int main(int argc, char** argv){
       goal.target_pose.header.stamp = ros::Time::now();
 
       goal.target_pose.pose.position.x = -75.0;
-      goal.target_pose.pose.position.y = 4.0;
+      goal.target_pose.pose.position.y = -4.0;
       goal.target_pose.pose.position.z = 0.0;
       goal.target_pose.pose.orientation.x = 0.0;
       goal.target_pose.pose.orientation.y = 0.0;

@@ -1,16 +1,24 @@
 <launch>
-  <param name="use_sim_time" type="bool" value="true" />
+  <include file="$(find rosi_moveit_config)/launch/demo.launch" />
+        <param name="use_sim_time" type="bool" value="true" />
         <!-- running the CLOCK node -->
 	<node name="clock_node" pkg="ppgeas" type="clock_node" respawn="true" />
 
+  <!-- Teste Braco Renan ###################################################################################################-->
+  <!-- Teste Braco Renan ###################################################################################################-->
+  <!-- Teste Braco Renan ###################################################################################################-->
+  <!--<node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 map base_link" />-->
+  <!-- Teste Braco Renan ###################################################################################################-->
+  <!-- Teste Braco Renan ###################################################################################################-->
+  <!-- Teste Braco Renan ###################################################################################################-->
+
 	<!-- Publish static transforms -->
 	<node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom" />
-<node name="map_bl" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map base_link" />
 	<!-- node name="bl_imu" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link imu" / -->
-  <node name="bl_velodyne_straight" pkg="tf2_ros" type="static_transform_publisher" args="0.242 0.002 0.1655 0 0 0 1 base_link2 velodyne_new" />
+  <node name="bl_velodyne_straight" pkg="tf2_ros" type="static_transform_publisher" args="0.242 0.002 0.1655 0 0 0 1 base_link velodyne_new" />
 
         <!-- node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.09 0 -0.0871557 0 0.9961947 base_link camera_link" / -->
-        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.009 0 0 0 1 base_link2 camera_link" />
+        <node name="bl_kinect" pkg="tf2_ros" type="static_transform_publisher" args="0.33 0.06 0.009 0 0 0 1 base_link camera_link" />
 	<!-- OBS: kinect position and orientation tuned empirically -->
 	<!-- Load reasonable defaults for the relative pose between cameras -->
   	<include file="$(find rgbd_launch)/launch/kinect_frames.launch">
@@ -73,28 +81,44 @@
 
 
   <!-- We do not have a robot connected, so publish fake joint states -->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-    <!-- <param name="use_gui" value="$(arg use_gui)"/> -->
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
+  <!--<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="$(arg use_gui)"/>
     <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
-  </node>
+  </node>-->
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
 
   <!-- Given the published joint states, publish tf for the robot links -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
+  <!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />-->
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
 
   <!-- Run the main MoveIt! executable without trajectory execution (we do not have controllers configured by default) -->
-  <include file="$(find rosi_moveit_config)/launch/move_group.launch">
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
+  <!--<include file="$(find rosi_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>
     <arg name="fake_execution" value="true"/>
     <arg name="info" value="true"/>
     <arg name="debug" value="$(arg debug)"/>
     <arg name="pipeline" value="$(arg pipeline)"/>
-  </include>
+  </include>-->
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
 
   <!-- Run Rviz and load the default config to see the state of the move_group node -->
-  <include file="$(find rosi_moveit_config)/launch/moveit_rviz.launch">
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
+  <!--<include file="$(find rosi_moveit_config)/launch/moveit_rviz.launch">
     <arg name="rviz_config" value="$(find rosi_moveit_config)/launch/moveit.rviz"/>
     <arg name="debug" value="$(arg debug)"/>
-  </include>
+  </include>-->
+  <!-- RENAN COMENTOU -->
+  <!-- RENAN COMENTOU -->
 
   <!-- If database loading was enabled, start mongodb as well -->
   <include file="$(find rosi_moveit_config)/launch/default_warehouse_db.launch" if="$(arg db)">
@@ -135,7 +159,7 @@
 	<node name="belt_detec" pkg="ppgeas" type="conveyorbelt_detection.py" respawn="true"/>
 
 	<!-- running the fire detection node -->
-	<node name="fire_detec" pkg="ppgeas" type="fire_detection.py" respawn="true"/>
+	<!-- node name="fire_detec" pkg="ppgeas" type="fire_detection.py" respawn="true"/ -->
 
 	<!-- reset odometry to static_rosiInitialPose -->
 	<!--node name="set_odom_pose_node" pkg="ppgeas" type="set_odom_pose_node" respawn="false"/ -->

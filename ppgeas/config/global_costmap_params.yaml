@@ -1,17 +1,17 @@
 global_costmap:
   global_frame: map
-  robot_base_frame: base_link
+  robot_base_frame: base_link2 # Renan
   update_frequency: 1.0
   static_map: true
   rolling_window: false
   track_unknown_space: true
 
-  plugins: 
-      - {name: static,    type: "costmap_2d::StaticLayer"}            
-   
-  static:        
-      map_topic: /map 
-      subscribe_to_updates: true 
+  plugins:
+      - {name: static,    type: "costmap_2d::StaticLayer"}
+
+  static:
+      map_topic: /map
+      subscribe_to_updates: true
 
   # global_frame: odom
   # robot_base_frame: base_link

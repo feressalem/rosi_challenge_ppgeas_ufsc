@@ -81,7 +81,7 @@ add_message_files(
    FILES
    DetectFire.srv
    DetectConveyorBelt.srv
-   Planning.srv
+   Touch.srv
  )
 
 ## Generate actions in the 'action' folder
