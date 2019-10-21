@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ppgeas)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -184,10 +184,6 @@ add_dependencies(machine_state ppgeas_gencpp)
 add_executable(fake_controller_output_node src/fake_controller_output.cpp)
 target_link_libraries(fake_controller_output_node ${catkin_LIBRARIES})
 
-
-# Define compile flags
-set_target_properties(kinect_converter PROPERTIES COMPILE_FLAGS "-Wall -Wextra -std=c++11")
-
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -274,3 +270,4 @@ target_link_libraries(set_odom_pose_node
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
