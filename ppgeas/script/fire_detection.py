@@ -24,7 +24,7 @@ class image_converter:
 
   def __init__(self):
     # Publisher com o resultado da deteccao de fogo
-    self.image_pub = rospy.Publisher("/fire_test",Image, queue_size=1)
+    # self.image_pub = rospy.Publisher("/fire_test",Image, queue_size=1)
     # Servico para identificacao da regiao de fogo
     self.serv = rospy.Service('detect_fire', DetectFire, self.handle_detect_fire)
     # Bridge entre ros e opencv
@@ -63,10 +63,10 @@ class image_converter:
       self.ctrX = 0
       self.ctrY = 0
     # Publica a imagem alterada
-    try:
-      self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-    except CvBridgeError as e:
-      print(e)
+    # try:
+    #   self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
+    # except CvBridgeError as e:
+    #   print(e)
   # Metodo para lidar com a requisicao de servico e o retorno da resposta
   def handle_detect_fire(self,req):
     if self.ctrX > 0 and self.ctrY > 0:

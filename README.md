@@ -57,7 +57,7 @@ $ cd ..
 $ catkin build
 ```
 
-## All Dependencies installation via Rosdep
+## All Dependencies installation via Rosdep (preferred option)
 After cloning our repository, it is possible to install all dependencies listed in the file package.xml by running the following commands:
 ```
 $ cd <your_catkin_workspace>
@@ -67,11 +67,10 @@ $ rosdep install --from-paths src --ignore-src -r -y
 ## Install imutils (Python dependency)
 Imutils is used for visualization of images.
 ```
-$ cd <your_catkin_workspace>
 $ sudo pip2 install imutils
 ```
 
-## Install move_base, moveit, rgbd_launch, eigen, RtabMap_ros, dwa_local_planner and map_server
+## Install move_base, moveit, rgbd_launch, eigen, RtabMap_ros, teb_local_planner and map_server
 Alternatively, the dependencies may be installed individually by the following commands:
 ```
 $ sudo apt-get install ros-melodic-move-base
@@ -106,15 +105,3 @@ Rviz has some kind of issue with floating points in urdf, in order to load robot
 ```
 $ echo 'export LC_NUMERIC='en_US.UTF-8'' >> ~/.bashrc 
 ```
-
-
-
-
-
-
-
-
-
-
-
-

@@ -58,6 +58,8 @@ from sensor_msgs.msg import JointState
 from rosi_defy.msg import ManipulatorJoints
 from ppgeas.srv import DetectConveyorBelt
 from ppgeas.srv import DetectConveyorBeltResponse
+from ppgeas.srv import DetectFire
+from ppgeas.srv import DetectFireResponse
 from geometry_msgs.msg import TwistStamped
 from rosi_defy.msg import HokuyoReading
 from ppgeas.srv import Touch, TouchResponse
@@ -168,11 +170,15 @@ class MoveGroupPythonIntefaceTutorial(object):
           self.go_to_pose_goal("inicial_esquerda")
       elif request.messages == "cavalete":
           self.planejamento("cavalete")
+      elif request.messages == "cavalete_esquerda":
+          self.planejamento("cavalete_esquerda")
+      elif request.messages == "cavalete_fogo":
+          self.planejamento("cavalete_fogo")
       elif request.messages == "giro1":
           self.go_to_joint_state("giro1")
       elif request.messages == "giro2":
           self.go_to_joint_state("giro2")
-      else:
+      elif request.messages == "tocar":
           self.planejamento("tocar")
       return TouchResponse(success=True, message="Execucao do braco completa")
 
@@ -310,6 +316,26 @@ class MoveGroupPythonIntefaceTutorial(object):
         pose_goal.position.x = -0.1040
         pose_goal.position.y = 0.2224
         pose_goal.position.z = 1.0516
+        group.set_pose_target(pose_goal)
+    elif (caso == "cavalete_fogo"):  #posicao goal x = -6, y = -2
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.orientation.x = 0.5123
+        pose_goal.orientation.y = 0.4879
+        pose_goal.orientation.z = -0.5110
+        pose_goal.orientation.w = 0.4881
+        pose_goal.position.x = -0.02088
+        pose_goal.position.y = -0.3772
+        pose_goal.position.z = 0.9172
+        group.set_pose_target(pose_goal)
+    elif (caso == "cavalete_esquerda"):
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.orientation.x = 0.5123
+        pose_goal.orientation.y = 0.4879
+        pose_goal.orientation.z = -0.5110
+        pose_goal.orientation.w = 0.4881
+        pose_goal.position.x = -0.02088
+        pose_goal.position.y = -0.3772
+        pose_goal.position.z = 0.9172
         group.set_pose_target(pose_goal)
 
     ## Now, we call the planner to compute the plan and execute it.
@@ -572,70 +598,113 @@ class MoveGroupPythonIntefaceTutorial(object):
       except rospy.ServiceException, e:
           print "Service call failed: %s"%e
 
+  def detect_fire(self,cx,cy):
+      rospy.wait_for_service('detect_fire')
+      try:
+          cb_detection = rospy.ServiceProxy('detect_fire', DetectFire)
+          response = cb_detection()
+          return response
+      except rospy.ServiceException, e:
+          print "Service call failed: %s"%e
+
   def planejamento(self,message):
-      if message == "tocar":
+      if message == "tocar": # lado direito
           window_size_y = 640
-          offset_y = -30
-          offset_z = -45
+          offset_y = -50
+          offset_z = -90
           window_size_z = 480
           limit = 10
           response = self.center_detection()
           cy = response.ctdx
           cz = response.ctdy
-          #i = 0
-          #self.go_to_pose_goal(caso="inicial")
-          self.plan_cartesian_path(scale = 1, direcao = 1)
-          #self.executar()
-          #rospy.sleep(5)
-          #rospy.sleep(2)
+          i = 0
+          self.go_to_pose_goal(caso="cavalete_esquerda")
           while (abs(cy - window_size_y/2 - offset_y) > limit):
-              #print("Executando X")
               if (cy - window_size_y/2 - offset_y) > limit:
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 1)
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -1, direcao = 1)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+              else:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale= 1, direcao = 1)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              response = self.center_detection()
+              cy = response.ctdx
+              cz = response.ctdy
+          while (abs(cz - window_size_z/2 - offset_z) > limit):
+              #print("Executando Z")
+              if (cz - window_size_z/2 - offset_z) > limit:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 2)
                   self.display_trajectory(cartesian_plan)
                   self.execute_plan(cartesian_plan)
                   #self.executar()
               else:
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 1)
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 2)
                   self.display_trajectory(cartesian_plan)
                   self.execute_plan(cartesian_plan)
                   #self.executar()
-                  response = self.center_detection()
-                  cy = response.ctdx
-                  cz = response.ctdy
-                  while (abs(cz - window_size_z/2 - offset_z) > limit):
-                      #print("Executando Z")
-                      if (cz - window_size_z/2 - offset_z) > limit:
-                          cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 2)
-                          self.display_trajectory(cartesian_plan)
-                          self.execute_plan(cartesian_plan)
-                          #self.executar()
-                      else:
-                          cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 2)
-                          self.display_trajectory(cartesian_plan)
-                          self.execute_plan(cartesian_plan)
-                          #self.executar()
-                          response = self.center_detection()
-                          cy = response.ctdx
-                          cz = response.ctdy
-                          while self.force < 0.4:
-                              print(self.dist)
-                              #print("Executando Y")
-                              if self.dist > 0.2:
-                                  #print("ta na norma")
-                                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 3)
-                                  self.display_trajectory(cartesian_plan)
-                                  self.execute_plan(cartesian_plan)
-                                  #self.executar()
-                              else:
-                                  #print("nao ta mais")
-                                  cartesian_plan, fraction = self.plan_cartesian_path(scale=1, direcao = 3)
-                                  self.display_trajectory(cartesian_plan)
-                                  self.execute_plan(cartesian_plan)
-                                  #self.executar()
-                                  self.go_to_pose_goal(caso="tocar")
-                                  self.go_to_pose_goal(caso="inicial")
-      if message == "cavalete":
+              response = self.center_detection()
+              cy = response.ctdx
+              cz = response.ctdy
+          while self.force < 0.4:
+              print(self.dist)
+              if i < 3:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -3, direcao = 3)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  i = i + 1
+              else:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -1, direcao = 3)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+          self.go_to_pose_goal(caso="cavalete_esquerda")
+          self.go_to_pose_goal(caso="inicial_esquerda")
+
+      if message == "cavalete": #lado direito
+          window_size_y = 640
+          offset_y = -50
+          offset_z = -250
+          window_size_z = 480
+          limit = 10
+          response = self.center_detection()
+          cy = response.ctdx
+          cz = response.ctdy
+          i = 0
+          #self.go_to_pose_goal(caso="inicial")
+          self.go_to_pose_goal(caso="cavalete_esquerda")
+          while (abs(cy - window_size_y/2 - offset_y) > limit):
+              #print("Executando X")
+              if (cy - window_size_y/2 - offset_y) > limit:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -1, direcao = 1)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              else:
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale= 1, direcao = 1)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+              response = self.center_detection()
+              cy = response.ctdx
+              cz = response.ctdy
+          while self.force < 0.4:
+              if i < 3:
+                  #print("ta na norma")
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -3, direcao = 3)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  i = i + 1
+                  #self.executar()
+              else:
+                  #print("nao ta mais")
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -1, direcao = 3)
+                  self.display_trajectory(cartesian_plan)
+                  self.execute_plan(cartesian_plan)
+                  #self.executar()
+          self.go_to_pose_goal(caso="cavalete_esquerda")
+          self.go_to_pose_goal(caso="inicial_esquerda")
+      if message == "cavalete_esquerda":
           window_size_y = 640
           offset_y = -30
           offset_z = -45
@@ -646,7 +715,7 @@ class MoveGroupPythonIntefaceTutorial(object):
           cz = response.ctdy
           #i = 0
           #self.go_to_pose_goal(caso="inicial")
-          self.go_to_pose_goal(caso="cavalete")
+          self.go_to_pose_goal(caso="cavalete_fogo")
           #self.executar()
           #rospy.sleep(5)
           #rospy.sleep(2)
@@ -699,63 +768,65 @@ class MoveGroupPythonIntefaceTutorial(object):
                   self.go_to_pose_goal(caso="inicial")
       if message == "cavalete_fogo":
           window_size_y = 640
-          offset_y = -30
+          offset_y = -20
           offset_z = -45
           window_size_z = 480
           limit = 10
-          response = self.fire_detection()
+          response = self.detect_fire(0,0)
           cy = response.ctdx
           cz = response.ctdy
-          cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 0)
-          self.display_trajectory(cartesian_plan)
-          self.execute_plan(cartesian_plan)
+          i = 0
+          self.go_to_pose_goal(caso="cavalete_fogo")
           while (abs(cy - window_size_y/2 - offset_y) > limit):
               #print("Executando X")
               if (cy - window_size_y/2 - offset_y) > limit:
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 1)
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -1, direcao = 1)
                   self.display_trajectory(cartesian_plan)
                   self.execute_plan(cartesian_plan)
                   #self.executar()
               else:
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 1)
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale= 1, direcao = 1)
                   self.display_trajectory(cartesian_plan)
                   self.execute_plan(cartesian_plan)
                   #self.executar()
-              response = self.center_detection()
+              response = self.detect_fire(0,0)
               cy = response.ctdx
               cz = response.ctdy
-          while (abs(cz - window_size_z/2 - offset_z) > limit):
-              #print("Executando Z")
-              if (cz - window_size_z/2 - offset_z) > limit:
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 2)
-                  self.display_trajectory(cartesian_plan)
-                  self.execute_plan(cartesian_plan)
-                  #self.executar()
-              else:
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 2)
-                  self.display_trajectory(cartesian_plan)
-                  self.execute_plan(cartesian_plan)
-                  #self.executar()
-              response = self.center_detection()
-              cy = response.ctdx
-              cz = response.ctdy
+#          while (abs(cz - window_size_z/2 - offset_z) > limit):
+#              #print("Executando Z")
+#              if (cz - window_size_z/2 - offset_z) > limit:
+#                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 2)
+#                  self.display_trajectory(cartesian_plan)
+#                  self.execute_plan(cartesian_plan)
+#                  #self.executar()
+#              else:
+#                  cartesian_plan, fraction = self.plan_cartesian_path(scale=-1, direcao = 2)
+#                  self.display_trajectory(cartesian_plan)
+#                  self.execute_plan(cartesian_plan)
+#                  #self.executar()
+#              response = self.detect_fire(0,0)
+#              cy = response.ctdx
+#              cz = response.ctdy
           while self.force < 0.4:
-              print(self.dist)
+              #print(self.dist)
               #print("Executando Y")
-              if self.dist > 0.2:
+              if i < 3:
                   #print("ta na norma")
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale = 1, direcao = 3)
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -5, direcao = 3)
                   self.display_trajectory(cartesian_plan)
                   self.execute_plan(cartesian_plan)
+                  i = i + 1
                   #self.executar()
               else:
                   #print("nao ta mais")
-                  cartesian_plan, fraction = self.plan_cartesian_path(scale=1, direcao = 3)
+                  cartesian_plan, fraction = self.plan_cartesian_path(scale = -1, direcao = 3)
                   self.display_trajectory(cartesian_plan)
                   self.execute_plan(cartesian_plan)
                   #self.executar()
                   #self.go_to_pose_goal(caso="cavalete")
+                  self.go_to_pose_goal(caso="cavalete_fogo")
                   self.go_to_pose_goal(caso="inicial_esquerda")
+
 def main():
   try:
     #print "============ Press `Enter` to begin the tutorial by setting up the moveit_commander (press ctrl-d to exit) ..."
