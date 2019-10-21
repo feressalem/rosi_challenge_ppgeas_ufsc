@@ -95,7 +95,7 @@ $ roslaunch ppgeas foo-mapping.launch rtabmap_args:="--delete_db_on_start" rtabm
 ```
 
 
-## Obs.: For evaluation purposes, please set the "time_header_getSimTime" flag to true in simulation_parameters.yaml of rosi_defy package and run the following command before starting simulation:
+## Obs.: For evaluation purposes, please set the "time_header_getSimTime" flag to false in simulation_parameters.yaml of rosi_defy package and run the following command before starting simulation:
 ```
 $ roslaunch rosi_defy load_parameters.launch
 ```
